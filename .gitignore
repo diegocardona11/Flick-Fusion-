@@ -4,7 +4,7 @@ Thumbs.db
 
 # Logs and Debug
 *.log
-*.sql
+# *.sql
 *.sqlite
 error_log
 debug.log
