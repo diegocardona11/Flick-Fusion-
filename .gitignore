@@ -1,0 +1,38 @@
+#OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and Debug
+*.log
+*.sql
+*.sqlite
+error_log
+debug.log
+
+# Environment files and credentials
+.env
+.env.local
+.env.*.local
+
+# Composer (PHP package manager)
+vendor/
+composer.lock
+
+# Node.js dependencies (if used for frontend)
+node_modules/
+package-lock.json
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# Cache and Temporary Files
+.cache/
+.tmp/
+*.tmp
+
+# Project-specific files
+database/dumps/
+tests/tmp/
+
