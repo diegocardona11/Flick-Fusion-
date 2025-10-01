@@ -35,4 +35,6 @@ package-lock.json
 # Project-specific files
 database/dumps/
 tests/tmp/
+tests/test.php
+tests/check_db.php
 
