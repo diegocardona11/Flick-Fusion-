@@ -8,17 +8,17 @@
  */
 
 $host = "localhost";        // Database server (local by default)
-$dbname = "flickfusion";    // Database name (make sure it matches phpMyAdmin)
+$dbname = "flick_fusion";   // Database name (make sure it matches phpMyAdmin)
 $username = "root";         // Database username (root by default)
 $password = "";             // Database password (empty by default)
 
 try {
     // Create a new PDO instance
-    $db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    
     // Set error mode to exceptions
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     // If there is an error, display the message
-    echo "DB Connection failed: " . $e->getMessage();
-    exit;
+    die("Database connection failed: " . $e->getMessage());
 }

@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 // Include shared header (with dynamic navbar and session)
 include 'partials/header.php';
 ?>
-
+<!DOCTYPE html>
 <!-- Main Content Area -->
   <main>
     <h1>Hello Flick Fusion!</h1>
