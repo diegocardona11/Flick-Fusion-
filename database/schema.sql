@@ -7,11 +7,11 @@
 -- Users table
 CREATE TABLE if NOT EXISTS users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,           -- unique usernames
+    email VARCHAR(100) NOT NULL UNIQUE,            -- unique emails
+    password_hash VARCHAR(255) NOT NULL,            -- hashed passwords
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Movies table
 CREATE TABLE if NOT EXISTS movies (
@@ -23,7 +23,7 @@ CREATE TABLE if NOT EXISTS movies (
     description TEXT,
     poster_url VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Ratings table
 CREATE TABLE if NOT EXISTS ratings (
@@ -37,7 +37,7 @@ CREATE TABLE if NOT EXISTS ratings (
     UNIQUE KEY uniq_user_movie (user_id, movie_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (movie_id) REFERENCES movies(movie_id)
-)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Friends table
 CREATE TABLE if NOT EXISTS friends (
@@ -46,5 +46,5 @@ CREATE TABLE if NOT EXISTS friends (
     status ENUM('pending', 'accepted') DEFAULT 'pending',
     PRIMARY KEY (user_id, friend_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (friend_id) REFERENCES users(user_id
-)
+    FOREIGN KEY (friend_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
