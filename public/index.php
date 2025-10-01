@@ -1,24 +1,17 @@
 <?php
-// show PHP errors while developing (remove later)
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
-// Include shared header (with dynamic navbar and session)
 include 'partials/header.php';
 ?>
-<!DOCTYPE html>
-<!-- Main Content Area -->
-  <main>
-    <h1>Hello Flick Fusion!</h1>
-    <p>If you can read this, PHP is working ✅</p>
-  </main>
-
-  <?php if (isset($_SESSION['user_id'])): ?>
-      <p>Welcome back, user #<?php echo htmlspecialchars($_SESSION['username']); ?>!
-        Go to your <a href="dashboard.php">Dashboard</a>.
+<main>
+  <?php if (!empty($_SESSION['user_id'])): ?>
+    <h1>Welcome back, <?= htmlspecialchars($_SESSION['username'] ?? 'user') ?>!</h1>
+    <p>Go to your <a href="/dashboard.php">Dashboard</a> or <a href="/movies.php">Search Movies</a>.</p>
   <?php else: ?>
-    <p><a href="login.php">Login</a> or <a href="register.php">Register</a> to start tracking your movies.</p>
+    <h1>Welcome to Flick Fusion 🎬</h1>
+    <p><a href="/login.php">Login</a> or 
+       <a href="/register.php">Register</a> to start tracking your movies.</p>
+    <p>Or try the <a href="/movies.php">Movies search</a> right now.</p>
   <?php endif; ?>
 </main>
-
 <?php include 'partials/footer.php'; ?>
