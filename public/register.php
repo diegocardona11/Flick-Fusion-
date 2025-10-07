@@ -10,7 +10,7 @@
  */
 
 
-require_once __DIR__ . '/../../backend/controllers/auth.php'; // authentication controller
+require_once __DIR__ . '/../backend/controllers/auth.php'; // authentication controller
 
 // Start session (needed for auto-login and error messages)
 if (session_status() !== PHP_SESSION_ACTIVE) {
