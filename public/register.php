@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $registration_result = registerUser($username, $email, $password);
         
-        if ($registrationSuccess) {
+        if ($registration_result) {
             // Registration successful, auto-login the user
             $loginSuccess = loginUser($username, $password);
 
@@ -152,6 +152,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             >
         </div>
 
+           <div style="margin-bottom: 18px;">
+               <input type="checkbox" id="showPasswordReg" onclick="togglePassword('password', 'showPasswordReg')">
+               <label for="showPasswordReg" style="font-size: 14px; cursor:pointer;">Show Password</label>
+           </div>
+
         <div class="form-group">
             <label for="confirm_password">Confirm Password</label>
             <input 
@@ -163,8 +168,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             >
         </div>
 
+           <div style="margin-bottom: 18px;">
+               <input type="checkbox" id="showConfirmPasswordReg" onclick="togglePassword('confirm_password', 'showConfirmPasswordReg')">
+               <label for="showConfirmPasswordReg" style="font-size: 14px; cursor:pointer;">Show Confirm Password</label>
+           </div>
+
         <button type="submit" class="btn">Create Account</button>
     </form>
+
+    <script>
+    function togglePassword(inputId, checkboxId) {
+        var input = document.getElementById(inputId);
+        var checkbox = document.getElementById(checkboxId);
+        if (input && checkbox) {
+            input.type = checkbox.checked ? 'text' : 'password';
+        }
+    }
+    </script>
 
     <!-- Link to login page for existing users -->
      <div class="login-link">

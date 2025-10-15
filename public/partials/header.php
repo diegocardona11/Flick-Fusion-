@@ -1,5 +1,5 @@
 <?php
-// Shared header + simple nav
+// Shared header and simple nav
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 if (session_status() === PHP_SESSION_NONE) session_start();
@@ -9,6 +9,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 <head>
   <meta charset="utf-8" />
   <title>Flick Fusion</title>
+  <link rel="stylesheet" href="/css/styles.css">
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
     header a { margin-right: 12px; }
