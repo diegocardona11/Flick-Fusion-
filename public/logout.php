@@ -1,4 +1,8 @@
 <?php
+// Define entry point for backend includes 
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    define('FLICK_FUSION_ENTRY_POINT', true);
+}
 /**
  * logout.php
  * ----------------------------------------

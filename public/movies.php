@@ -1,4 +1,9 @@
 <?php
+// Define entry point for backend includes
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+  define('FLICK_FUSION_ENTRY_POINT', true);
+}
+
 require __DIR__ . '/../backend/api/omdb.php';
 
 // get query from ?q=

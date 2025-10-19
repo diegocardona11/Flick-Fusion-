@@ -1,4 +1,7 @@
 <?php
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    define('FLICK_FUSION_ENTRY_POINT', true);
+}
 /**
  * login.php
  * ----------------------------------------

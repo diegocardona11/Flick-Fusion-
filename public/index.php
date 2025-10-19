@@ -1,6 +1,11 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// Define entry point for backend includes 
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    define('FLICK_FUSION_ENTRY_POINT', true);
+}
+// ini_set('display_errors', 1);  // not shown for production
+// error_reporting(E_ALL);
+
 include 'partials/header.php';
 ?>
 <main>
