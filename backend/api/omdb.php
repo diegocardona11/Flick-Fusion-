@@ -1,35 +1,42 @@
 <?php
-// Prevent direct script access
-if (!defined('FLICK_FUSION_ENTRY_POINT')) {
-    http_response_code(403); // Forbidden
-    exit('Access denied.');
+// backend/api/omdb.php
+// This handles OMDb API connections (movie data fetching)
+
+// 1️Return your OMDb API key
+function omdb_api_key(): string {
+ 
+  return '6754e3a3';
 }
 
-// OMDb helper
+// Search movies by title
+function omdb_search(string $q): array {
+  if ($q === '') return [];
 
-function omdb_api_key(): ?string { 
-  $env = __DIR__ . '/../../.env';
-  if (file_exists($env)) {
-    $vars = parse_ini_file($env, false, INI_SCANNER_RAW);
-    if (!empty($vars['OMDB_API_KEY'])) return $vars['OMDB_API_KEY'];
-  }
-  return null; // Return null if no key is found. 
-}
+  // Build the request URL
+  $url = 'https://www.omdbapi.com/?apikey=' . urlencode(omdb_api_key())
+       . '&type=movie&s=' . urlencode($q);
 
-function omdb_search(string $query): array {
-  $apiKey = omdb_api_key();
-  if ($apiKey === null) {
-    // No API key configured = no request
-    error_log("OMDb API key is missing.");
-    return [];
-  }
-
-  $q = urlencode($query);
-  $url = "http://www.omdbapi.com/?apikey=" . $apiKey . "&type=movie&s={$q}";
+  // Fetch results
   $json = @file_get_contents($url);
+  if ($json === false) {
+    return []; // API failed or SSL problem
+  }
 
-  if ($json === false) return [];
-  
+  // Decode response
   $data = json_decode($json, true);
-  return $data['Search'] ?? []; // array of results or empty
+
+  // Return list of movies (if any)
+  return isset($data['Search']) && is_array($data['Search'])
+    ? $data['Search']
+    : [];
+}
+
+// detailed movie info by IMDb ID
+function omdb_fetch_by_id(string $imdbID): ?array {
+  $url = 'https://www.omdbapi.com/?apikey=' . urlencode(omdb_api_key())
+       . '&i=' . urlencode($imdbID) . '&plot=short';
+  $json = @file_get_contents($url);
+  if ($json === false) return null;
+  $data = json_decode($json, true);
+  return !empty($data['imdbID']) ? $data : null;
 }
