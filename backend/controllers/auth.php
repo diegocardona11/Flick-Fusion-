@@ -1,4 +1,9 @@
 <?php
+// Prevent direct script access
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    http_response_code(403); // Forbidden
+    exit('Access denied.');
+}
 /**
  * auth.php
  * ----------------------------------------
