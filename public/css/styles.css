@@ -12,22 +12,28 @@
  * 4. Page-Specific Styles (Homepage, User Profile...)
  */
 
+
  /* ---- 1. Global Style Guide ---- */
  /* This section defines the core variables and base styles used throughout the application. */
-
  :root {
-    --bg-dark: #121212;
-    --surface-dark: #1B1B1B;
-    --text-light: #EAEAEA;
-    --text-white: #FFFFFF;
-    --accent-green: #1DB954;
-    --neutral-gray: #888888;
-    --border-color: #333; 
-    --danger-red: #991b1b; /* For delete buttons */
-    --danger-red-hover: #b91c1c; /* For delete button hover */
+    --bg-dark: #1A1A1D;
+    --surface-dark: #252528;
+    --text-light: #E1E1E1;
+    --text-secondary: #A9A9A9;
+
+    /* Primary Accent Colors */
+    --accent-primary: #B91C1C;
+    --accent-primary-hover: #DC2626;
+
+    /* Secondary Accent Colors */
+    --accent-secondary: #F2A900;
+
+    --text-on-accent: #FFFFFF;
+    --border-color: #4B5563;
     --border-radius: 8px;
-    --font-heading: 'Poppins', sans-serif;
-    --font-body: 'Inter', sans-serif;
+
+    --font-heading: 'Alegreya Sans', sans-serif;
+    --font-body: 'Merriweather', serif;
  }
 
  body {
@@ -40,18 +46,18 @@
 
  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--text-white);
+    color: var(--text-light);
     margin-top: 0;
  }
 
  a {
-    color: var(--accent-green);
+    color: var(--accent-primary);
     text-decoration: none;
     transition: color 0.3s;
  }
 
  a:hover {
-    color: #1ed760;
+    color: var(--accent-primary-hover);
     text-decoration: underline;
  }
 
@@ -63,20 +69,69 @@
 
  /* ---- 2. Layout Styles ---- */
  /* These are reusable layout styles for structuring content. */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.centered-container {
+    max-width: 450px;
+}
 
  /* ---- 3. Component Styles ---- */
  /* This section includes styles for common components used across the site. */
 
- /* ---- 4. Page-Specific Styles ---- */
- /* Styles for the movies.php page */
+ header {
+    background-color: var(--surface-dark);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+ }
 
+ header a {
+    color: var(--text-light);
+    font-weight: 500;
+ }
+
+ header a:hover, header a.active {
+    color: var(--accent-primary-hover);
+    text-decoration: none;
+ }
+
+ header strong {
+    color: var(--text-light);
+ }
+
+ header span {
+    margin-left: auto; /* Pushes user info to the right */
+    color: var(--text-secondary);
+ }
+
+
+
+ /* ---- 4. Page-Specific Styles ---- */
+.main-header {
+    background-color: var(--surface-dark);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+
+
+ /* Styles for the movies.php page */
  .flash-message {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: var(--border-radius);
     background-color: var(--surface-dark);
-    color: var(--accent-green);
-    border: 1px solid var(--accent-green);
+    color: var(--accent-secondary);
+    border: 1px solid var(--accent-secondary);
  }
 
  .movie-list {
@@ -123,13 +178,14 @@
  }
 
  .btn-danger {
-    background-color: var(--danger-red);
-    border-color: var(--danger-red);
-    color: var(--text-light);
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-on-accent);
  }
 
  .btn-danger:hover {
-    background-color: var(--danger-red-hover);
+    background-color: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
  }
 
  .section-divider {
