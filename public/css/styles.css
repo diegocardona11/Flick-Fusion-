@@ -1,2 +1,138 @@
-/* styles.css */
-/* Purpose: Site-wide styling */
+/*
+ * styles.css
+ * ----------------------------------------
+ * Sitewide Stylesheet 
+ * This file contains all the styles for the entire application. 
+ * It is structured in a logical order to ensure maintainability and ease of use.
+ * ----------------------------------------
+ * TABLE OF CONTENTS
+ * 1. Global Style Guide (Variables and Base Styles)
+ * 2. Layout Styles (Containers, Grids, Flexbox)
+ * 3. Component Styles (Header, Buttons, Forms)
+ * 4. Page-Specific Styles (Homepage, User Profile...)
+ */
+
+ /* ---- 1. Global Style Guide ---- */
+ /* This section defines the core variables and base styles used throughout the application. */
+
+ :root {
+    --bg-dark: #121212;
+    --surface-dark: #1B1B1B;
+    --text-light: #EAEAEA;
+    --text-white: #FFFFFF;
+    --accent-green: #1DB954;
+    --neutral-gray: #888888;
+    --border-color: #333; 
+    --danger-red: #991b1b; /* For delete buttons */
+    --danger-red-hover: #b91c1c; /* For delete button hover */
+    --border-radius: 8px;
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
+ }
+
+ body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-body);
+    margin: 0;
+    line-height: 1.6;
+ }
+
+ h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-white);
+    margin-top: 0;
+ }
+
+ a {
+    color: var(--accent-green);
+    text-decoration: none;
+    transition: color 0.3s;
+ }
+
+ a:hover {
+    color: #1ed760;
+    text-decoration: underline;
+ }
+
+ img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+ }
+
+ /* ---- 2. Layout Styles ---- */
+ /* These are reusable layout styles for structuring content. */
+
+ /* ---- 3. Component Styles ---- */
+ /* This section includes styles for common components used across the site. */
+
+ /* ---- 4. Page-Specific Styles ---- */
+ /* Styles for the movies.php page */
+
+ .flash-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    background-color: var(--surface-dark);
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+ }
+
+ .movie-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1.5rem;
+ }
+
+ .movie-list-item {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+ }
+
+ .movie-list-item img {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+ }
+
+ .movie-details {
+    flex-grow: 1;
+ }
+
+ .movie-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+ }
+
+ .movie-actions .form-inline {
+    display: inline-block;
+ }
+
+ .movie-actions .rating-input {
+    width: 60px;
+    margin: 0 0.5rem;
+ }
+
+ .btn-danger {
+    background-color: var(--danger-red);
+    border-color: var(--danger-red);
+    color: var(--text-light);
+ }
+
+ .btn-danger:hover {
+    background-color: var(--danger-red-hover);
+ }
+
+ .section-divider {
+    margin: 2rem 0;
+    border-color: var(--border-color);
+ }

@@ -5,14 +5,19 @@ if (!defined('FLICK_FUSION_ENTRY_POINT')) {
 }
 
 require __DIR__ . '/../backend/api/omdb.php';
-require __DIR__ . '/_db.php';
+require_once __DIR__ . '/../backend/config/db.php';
 require_once __DIR__ . '/../backend/controllers/movies.php';
 include 'partials/header.php';
 
-// connect to DB
-$pdo = db();
-$userId = 1;  // temp user until auth
+// $pdo is now available from db.php
+$userId = $_SESSION['user_id'] ?? null;
 $flash = '';
+
+// Redirect to login if user is not authenticated
+if (!$userId) {
+    header('Location: login.php');
+    exit;
+}
 
 // ---------------------------
 // Handle POST Actions
@@ -79,7 +84,7 @@ $myList = getMoviesForUser($pdo, $userId);
   <h2>Search Movies</h2>
 
   <?php if ($flash): ?>
-    <p style="color: #0a0; margin-top:8px;"><?= htmlspecialchars($flash) ?></p>
+    <p class="flash-message"><?= htmlspecialchars($flash) ?></p>
   <?php endif; ?>
 
   <form method="get" action="movies.php" class="form-box">
@@ -89,7 +94,6 @@ $myList = getMoviesForUser($pdo, $userId);
       value="<?= htmlspecialchars($q) ?>"
       placeholder="Search title..."
       required
-      style="width:70%;padding:10px;"
     >
     <button type="submit" class="btn">Search</button>
   </form>
@@ -97,20 +101,21 @@ $myList = getMoviesForUser($pdo, $userId);
   <?php if ($q !== ''): ?>
     <h3>Results for "<?= htmlspecialchars($q) ?>"</h3>
     <?php if ($results): ?>
-      <ul style="list-style:none;padding-left:0;">
+      <ul class="movie-list">
         <?php foreach ($results as $m): ?>
-          <li style="margin-bottom:18px;border:1px solid #ddd;border-radius:8px;padding:12px;">
-            <strong><?= htmlspecialchars($m['Title']) ?></strong>
-            (<?= htmlspecialchars($m['Year']) ?>)
+          <li class="movie-list-item">
             <?php if (!empty($m['Poster']) && $m['Poster'] !== 'N/A'): ?>
-              <br><img src="<?= htmlspecialchars($m['Poster']) ?>" width="100" alt="Poster">
+              <img src="<?= htmlspecialchars($m['Poster']) ?>" alt="Poster">
             <?php endif; ?>
-
-            <!-- Add to My List -->
-            <form method="post" action="movies.php" style="margin-top:8px;">
-              <input type="hidden" name="imdbID" value="<?= htmlspecialchars($m['imdbID']) ?>">
-              <button type="submit" class="btn">Add to My List</button>
-            </form>
+            <div class="movie-details">
+              <strong><?= htmlspecialchars($m['Title']) ?></strong>
+              (<?= htmlspecialchars($m['Year']) ?>)
+              <!-- Add to My List -->
+              <form method="post" action="movies.php" class="movie-actions">
+                <input type="hidden" name="imdbID" value="<?= htmlspecialchars($m['imdbID']) ?>">
+                <button type="submit" class="btn">Add to My List</button>
+              </form>
+            </div>
           </li>
         <?php endforeach; ?>
       </ul>
@@ -120,46 +125,44 @@ $myList = getMoviesForUser($pdo, $userId);
   <?php endif; ?>
 
   <!-- My List Section -->
-  <hr style="margin:24px 0;">
+  <hr class="section-divider">
   <h2>My List</h2>
 
   <?php if ($myList): ?>
-    <ul style="list-style:none;padding-left:0;">
+    <ul class="movie-list">
       <?php foreach ($myList as $row): ?>
-        <li style="margin-bottom:18px;border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="display:flex;gap:12px;align-items:center;">
-            <?php if (!empty($row['poster_url'])): ?>
-              <img src="<?= htmlspecialchars($row['poster_url']) ?>" width="60" alt="Poster">
+        <li class="movie-list-item">
+          <?php if (!empty($row['poster_url'])): ?>
+            <img src="<?= htmlspecialchars($row['poster_url']) ?>" alt="Poster">
+          <?php endif; ?>
+          <div class="movie-details">
+            <strong><?= htmlspecialchars($row['title']) ?></strong>
+            <?php if (!empty($row['year'])): ?>
+              (<?= (int)$row['year'] ?>)
             <?php endif; ?>
-            <div>
-              <strong><?= htmlspecialchars($row['title']) ?></strong>
-              <?php if (!empty($row['year'])): ?>
-                (<?= (int)$row['year'] ?>)
-              <?php endif; ?>
-              <div style="margin-top:6px;">
-                <!-- Update Rating -->
-                <form method="post" action="movies.php" style="display:inline-block;margin-right:8px;">
-                  <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
-                  <label>
-                    Rating:
-                    <input
-                      type="number"
-                      name="score"
-                      min="1"
-                      max="10"
-                      value="<?= (int)($row['score_10'] ?? 5) ?>"
-                      style="width:60px;"
-                    >
-                  </label>
-                  <button type="submit" class="btn">Update</button>
-                </form>
+            <div class="movie-actions">
+              <!-- Update Rating -->
+              <form method="post" action="movies.php" class="form-inline">
+                <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
+                <label>
+                  Rating:
+                  <input
+                    type="number"
+                    name="score"
+                    min="1"
+                    max="10"
+                    value="<?= (int)($row['score_10'] ?? 5) ?>"
+                    class="rating-input"
+                  >
+                </label>
+                <button type="submit" class="btn">Update</button>
+              </form>
 
-                <!-- Remove from List -->
-                <form method="post" action="movies.php" style="display:inline-block;">
-                  <input type="hidden" name="remove_movie_id" value="<?= (int)$row['movie_id'] ?>">
-                  <button type="submit" class="btn" style="background:#d33;border-color:#d33;">Remove</button>
-                </form>
-              </div>
+              <!-- Remove from List -->
+              <form method="post" action="movies.php" class="form-inline">
+                <input type="hidden" name="remove_movie_id" value="<?= (int)$row['movie_id'] ?>">
+                <button type="submit" class="btn btn-danger">Remove</button>
+              </form>
             </div>
           </div>
         </li>

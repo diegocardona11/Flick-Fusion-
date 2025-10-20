@@ -11,12 +11,10 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 <head>
   <meta charset="utf-8" />
   <title>Flick Fusion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/styles.css">
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
-    header a { margin-right: 12px; }
-    hr { margin: 10px 0 20px; }
-  </style>
 </head>
 <body>
 <header>
