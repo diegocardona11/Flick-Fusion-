@@ -1,16 +1,17 @@
 <?php
-require_once __DIR__ . '/../api/omdb.php';  // uses your OMDb key
+require_once __DIR__ . '/../api/omdb.php'; // uses your OMDb key
 
 // 1) Add a movie to local DB if it doesn’t exist
 function addMovieToLocalDB(PDO $pdo, string $imdbID): ?int {
   $q = $pdo->prepare("SELECT movie_id FROM movies WHERE api_id = ?");
   $q->execute([$imdbID]);
-  if ($row = $q->fetch()) return (int)$row['movie_id'];
+  if ($row = $q->fetch(PDO::FETCH_ASSOC)) return (int)$row['movie_id'];
 
   // Fetch from OMDb
-  $url = "https://www.omdbapi.com/?apikey=" . omdb_api_key() . "&i=" . urlencode($imdbID) . "&plot=short";
+  $url  = "https://www.omdbapi.com/?apikey=" . omdb_api_key() . "&i=" . urlencode($imdbID) . "&plot=short";
   $json = @file_get_contents($url);
-  if (!$json) return null;
+  if (!$json) return null; // network / OMDb error
+
   $m = json_decode($json, true);
   if (!$m || empty($m['imdbID'])) return null;
 
@@ -26,17 +27,19 @@ function addMovieToLocalDB(PDO $pdo, string $imdbID): ?int {
     $m['Plot'] ?? null,
     (!empty($m['Poster']) && $m['Poster'] !== 'N/A') ? $m['Poster'] : null
   ]);
+
   return (int)$pdo->lastInsertId();
 }
 
 // 2) Link movie to user
 function addMovieToUserList(PDO $pdo, int $userId, int $movieId, int $defaultScore = 5): void {
+  $score = max(1, min(10, $defaultScore));
   $stmt = $pdo->prepare("
     INSERT INTO ratings (user_id, movie_id, score_10)
     VALUES (?, ?, ?)
-    ON DUPLICATE KEY UPDATE score_10 = score_10
+    ON DUPLICATE KEY UPDATE score_10 = score_10, updated_at = CURRENT_TIMESTAMP
   ");
-  $stmt->execute([$userId, $movieId, max(1, min(10, $defaultScore))]);
+  $stmt->execute([$userId, $movieId, $score]);
 }
 
 // 3) Get all movies for user (for dashboard)
@@ -49,18 +52,22 @@ function getMoviesForUser(PDO $pdo, int $userId): array {
     ORDER BY m.title
   ");
   $stmt->execute([$userId]);
-  return $stmt->fetchAll();
+  return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // 4) Update a rating
-function updateRating(PDO $pdo, int $userId, int $movieId, int $score): void {
+function updateRating(PDO $pdo, int $userId, int $movieId, int $score): bool {
   $score = max(1, min(10, $score));
-  $stmt = $pdo->prepare("UPDATE ratings SET score_10 = ? WHERE user_id = ? AND movie_id = ?");
-  $stmt->execute([$score, $userId, $movieId]);
+  $stmt = $pdo->prepare("
+    UPDATE ratings
+    SET score_10 = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE user_id = ? AND movie_id = ?
+  ");
+  return $stmt->execute([$score, $userId, $movieId]);
 }
 
 // 5) Remove movie from user’s list
-function removeMovieFromUserList(PDO $pdo, int $userId, int $movieId): void {
+function removeMovieFromUserList(PDO $pdo, int $userId, int $movieId): bool {
   $stmt = $pdo->prepare("DELETE FROM ratings WHERE user_id = ? AND movie_id = ?");
-  $stmt->execute([$userId, $movieId]);
+  return $stmt->execute([$userId, $movieId]);
 }
