@@ -2,10 +2,27 @@
 // backend/api/omdb.php
 // This handles OMDb API connections (movie data fetching)
 
-// 1️Return your OMDb API key
-function omdb_api_key(): string {
- 
-  return '6754e3a3';
+// 1️Return your OMDb API key from the .env file
+function omdb_api_key(): ?string {
+  // Path to the .env file at the project root
+  $envPath = __DIR__ . '/../../.env';
+
+  if (!file_exists($envPath)) {
+    // .env file does not exist, log an error
+    error_log('Security Notice: .env file not found. Cannot load OMDb API key.');
+    return null;
+  }
+
+  // Parse the .env file
+  $env = parse_ini_file($envPath);
+
+  if (empty($env['OMDB_API_KEY'])) {
+    // OMDB_API_KEY is not set in the .env file, log an error
+    error_log('Configuration Error: OMDB_API_KEY not found in .env file.');
+    return null;
+  }
+
+  return $env['OMDB_API_KEY'];
 }
 
 // Search movies by title
