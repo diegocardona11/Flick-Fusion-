@@ -60,7 +60,7 @@ $search_results = [];
 if ($q !== '') {
     $basic_results = omdb_search($q);
 
-    // For each result, get detailed information
+    // For each result, get detailed information including plot
     if ($basic_results) {
         foreach ($basic_results as $movie) {
             $detailed = omdb_fetch_by_id($movie['imdbID']);

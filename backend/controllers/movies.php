@@ -15,13 +15,13 @@ function addMovieToLocalDB(PDO $pdo, string $imdbID): ?int {
     return (int)$row['movie_id']; // It exists, return its ID
   } 
 
-  // If not found, fetch from OMDb
+  // If not found, fetch detailed info from OMDb (only called once when adding to watchlist)
   $movieData = omdb_fetch_by_id($imdbID);
   if (!$movieData) { 
     return null; // network/API failure
   }
 
-  // Insert into local DB
+  // Insert into local DB with full details
   $ins = $pdo->prepare("
     INSERT INTO movies (api_id, title, year, genre, description, poster_url)
     VALUES (?, ?, ?, ?, ?, ?)
