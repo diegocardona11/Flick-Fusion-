@@ -37,33 +37,3 @@ function addMovieToLocalDB(PDO $pdo, string $imdbID): ?int {
 
   return (int)$pdo->lastInsertId();
 }
-
-// 2) Link movie to user
-function addMovieToUserList(PDO $pdo, int $userId, int $movieId, int $defaultScore = 5): void {
-  $score = max(1, min(10, $defaultScore));
-  $stmt = $pdo->prepare("
-    INSERT INTO ratings (user_id, movie_id, score_10)
-    VALUES (?, ?, ?)
-    ON DUPLICATE KEY UPDATE score_10 = score_10, updated_at = CURRENT_TIMESTAMP
-  ");
-  $stmt->execute([$userId, $movieId, $score]);
-}
-
-// 3) Get all movies for user (for dashboard)
-function getMoviesForUser(PDO $pdo, int $userId): array {
-  $stmt = $pdo->prepare("
-    SELECT m.movie_id, m.title, m.year, m.poster_url, r.score_10
-    FROM ratings r
-    JOIN movies m ON m.movie_id = r.movie_id
-    WHERE r.user_id = ?
-    ORDER BY m.title
-  ");
-  $stmt->execute([$userId]);
-  return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// 5) Remove movie from user’s list
-function removeMovieFromUserList(PDO $pdo, int $userId, int $movieId): bool {
-  $stmt = $pdo->prepare("DELETE FROM ratings WHERE user_id = ? AND movie_id = ?");
-  return $stmt->execute([$userId, $movieId]);
-}

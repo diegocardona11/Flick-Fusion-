@@ -14,28 +14,27 @@ $flash = '';
 
 // Handle "Add to List" form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_movie'])) {
-    if ($userId && !empty($_POST['imdb_id'])) {
-        $api_id = $_POST['imdb_id'];
-        
-        // CORRECTED CALL: Pass the $pdo object
-        $local_movie_id = addMovieToLocalDB($pdo, $api_id);
+  $api_id = $_POST['imdb_id'];
+  $local_movie_id = addMovieToLocalDB($pdo, $api_id);
 
-        if ($local_movie_id) {
-            // CORRECTED CALL: Pass the $pdo object
-            if (addMovieToUserList($pdo, $userId, $local_movie_id, 'watchlist')) {
-                $flash = "Movie was added to your list!";
-            } else {
-                $flash = "Movie is already in your list.";
-            }
-        } else {
-            $flash = "Could not fetch movie details from the API.";
+  if ($local_movie_id) {
+        $score = null;
+        if (isset($_POST['add_to_watched'])) {
+            $score = 7; // Default score for watched movies to be changed later
         }
 
-        // Redirect to prevent form resubmission
-        $qParam = isset($_GET['q']) ? ('?q=' . urlencode($_GET['q'])) : '';
-        header("Location: movies.php{$qParam}&flash=" . urlencode($flash));
-        exit;
+        if (addMovieToUserList($pdo, $userId, $local_movie_id, $score)) {
+            $flash = "Movie was added to your list!";
+        } else {
+            $flash = "Movie is already in your list.";
+        }
+    } else {
+        $flash = "Could not fetch movie details from the API.";
     }
+
+    $qParam = isset($_GET['q']) ? ('?q=' . urlencode($_GET['q'])) : '';
+    header("Location: movies.php{$qParam}&flash=" . urlencode($flash));
+    exit;
 }
 
 // Get flash message from redirect
@@ -73,26 +72,31 @@ include 'partials/header.php';
 
   <?php if ($q !== ''): ?>
     <h3>Results for "<?= htmlspecialchars($q) ?>"</h3>
-    <?php if ($results): ?>
+    <?php if ($search_results): ?>
       <ul class="movie-list">
-        <?php foreach ($results as $m): ?>
+        <?php foreach ($search_results as $m): ?>
           <li class="movie-list-item">
             <?php if (!empty($m['Poster']) && $m['Poster'] !== 'N/A'): ?>
-              <img src="<?= htmlspecialchars($m['Poster']) ?>" alt="Poster">
-            <?php endif; ?>
-            <div class="movie-details">
-              <strong><?= htmlspecialchars($m['Title']) ?></strong>
-              (<?= htmlspecialchars($m['Year']) ?>)
-              <!-- Add to My List -->
-              <form method="post" action="movies.php" class="movie-actions">
-                <input type="hidden" name="imdbID" value="<?= htmlspecialchars($m['imdbID']) ?>">
-                <button type="submit" class="btn">Add to My List</button>
-              </form>
-            </div>
-          </li>
+                    <img src="<?= htmlspecialchars($m['Poster']) ?>" alt="Poster">
+                <?php else: ?>
+                    <!-- Fallback image if no poster is available -->
+                    <img src="https://placehold.co/80x120/252528/A9A9A9?text=N/A" alt="No poster available">
+                <?php endif; ?>
+                <div class="movie-details">
+                    <strong><?= htmlspecialchars($m['Title']) ?></strong>
+                    (<?= htmlspecialchars($m['Year']) ?>)
+                    
+                    <?php if ($userId): // Only show the form if the user is logged in ?>
+                        <form method="post" action="movies.php?q=<?= urlencode($q) ?>" class="movie-actions">
+                            <input type="hidden" name="imdb_id" value="<?= htmlspecialchars($m['imdbID']) ?>">
+                            <button type="submit" name="add_movie" class="btn">Add to My List</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </li>
         <?php endforeach; ?>
-      </ul>
-    <?php else: ?>
+    </ul>
+<?php else: ?>
       <p>No results found.</p>
     <?php endif; ?>
   <?php endif; ?>
