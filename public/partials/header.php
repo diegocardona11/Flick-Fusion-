@@ -27,11 +27,14 @@ if (session_status() === PHP_SESSION_NONE) session_start();
     <a href="index.php" class="logo"><strong>Flick Fusion</strong></a>
 
     <nav class="main-nav">
-      <a href="movies.php">Movies</a>
-            <?php if (!empty($_SESSION['user_id'])): ?>
-                <a href="dashboard.php">My List</a>
-                <a href="friends.php">Friends</a>
-            <?php endif; ?>
+          <?php if (!empty($_SESSION['user_id'])): ?>
+              <a href="index.php">Home</a>
+              <a href="movies.php">Movies</a>
+              <a href="dashboard.php">My List</a>
+          <?php else: ?>
+              <a href="index.php">Explore</a>
+              <a href="movies.php">Search</a>
+          <?php endif; ?>
     </nav>
 
     <div class="header-actions">
@@ -66,3 +69,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           <?php endif; ?>
   </div>
 </header>
+
+<!-- This div will wrap all main page content -->
+ <div class="main-content">
