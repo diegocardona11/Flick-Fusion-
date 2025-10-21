@@ -1,2 +1,753 @@
-/* styles.css */
-/* Purpose: Site-wide styling */
+/*
+ * styles.css
+ * ----------------------------------------
+ * Sitewide Stylesheet 
+ * This file contains all the styles for the entire application. 
+ * It is structured in a logical order to ensure maintainability and ease of use.
+ * ----------------------------------------
+ * TABLE OF CONTENTS
+ * 1. Global Style Guide (Variables and Base Styles)
+ * 2. Layout Styles (Containers, Grids, Flexbox)
+ * 3. Component Styles (Header, Buttons, Forms)
+ * 4. Page-Specific Styles (Homepage, User Profile...)
+ */
+
+
+ /* ---- 1. Global Style Guide ---- */
+ /* This section defines the core variables and base styles used throughout the application. */
+ :root {
+    --bg-dark: #1A1A1D;
+    --surface-dark: #252528;
+    --text-light: #E1E1E1;
+    --text-secondary: #A9A9A9;
+
+    /* Primary Accent Colors */
+    --accent-primary: #B91C1C;
+    --accent-primary-hover: #DC2626;
+
+    /* Secondary Accent Colors */
+    --accent-secondary: #F2A900;
+
+    --text-on-accent: #FFFFFF;
+    --border-color: #4B5563;
+    --border-radius: 8px;
+
+    --font-heading: 'Alegreya Sans', sans-serif;
+    --font-body: 'Merriweather', serif;
+ }
+
+ html {
+    height: 100%;
+ }
+
+ body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-body);
+    margin: 0;
+    line-height: 1.6;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+ }
+
+ h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-light);
+    margin-top: 0;
+ }
+
+ a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color 0.3s;
+ }
+
+ a:hover {
+    color: var(--accent-primary-hover);
+    text-decoration: underline;
+ }
+
+ img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+ }
+
+ /* ---- 2. Layout Styles ---- */
+ /* These are reusable layout styles for structuring content. */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.centered-container {
+    max-width: 450px;
+}
+
+/* Style for the main content area of each page */
+main.container {
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+}
+
+
+ /* ---- 3. Component Styles ---- */
+ /* This section includes styles for common components used across the site. */
+
+ .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    text-decoration: none;
+ }
+
+ .btn:hover {
+    text-decoration: none;
+ }
+
+ .btn-primary {
+    background-color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
+    color: var(--text-on-accent);
+ }
+ .btn-primary:hover {
+    background-color: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
+ }
+
+ .btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+ }
+ .btn-secondary:hover {
+    background-color: var(--surface-dark);
+    border-color: var(--text-secondary);
+ }
+
+ .form-box {
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+ }
+
+ .form-error {
+    color: var(--accent-primary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+ }
+
+
+ /* Header Styles */
+ .main-header {
+    background-color: var(--surface-dark);
+    padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    height: 70px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+ }
+
+ .header-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+ }
+
+ .logo {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--text-light);
+    text-decoration: none;
+    flex-shrink: 0;
+ }
+ .logo:hover {
+    color: var(--text-light);
+    text-decoration: none;
+ }
+ .logo strong {
+    color: var(--accent-primary);
+ }
+
+ .main-nav {
+    display: flex;
+    gap: 2rem;
+    margin-left: 3rem;
+    margin-right: auto;
+ }
+ .main-nav a {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    position: relative;
+    padding: 0.5rem 0;
+ }
+ .main-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent-primary);
+    transition: width 0.3s ease;
+ }
+ .main-nav a:hover,
+ .main-nav a.active {
+    color: var(--text-light);
+ }
+ .main-nav a:hover::after,
+ .main-nav a.active::after {
+    width: 100%;
+ }
+
+ .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+ }
+
+ .header-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+ }
+ .search-input {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    width: 220px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+ }
+ .search-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: var(--bg-dark);
+ }
+ .search-button {
+    background: transparent;
+    border: none;
+    padding: 0 0.75rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+ }
+ .search-button:hover {
+    color: var(--accent-primary);
+ }
+
+ .user-auth {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+ }
+
+ .user-menu {
+    position: relative;
+ }
+ .user-menu-trigger {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+ }
+ .user-menu-trigger:hover,
+ .user-menu-trigger.is-open {
+    color: var(--text-light);
+    background-color: var(--surface-dark);
+ }
+ .user-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    width: 220px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+ }
+ .user-menu-dropdown.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+ }
+ .dropdown-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+ }
+ .dropdown-header strong {
+    color: var(--text-light);
+ }
+ .user-menu-dropdown a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--text-light);
+    text-decoration: none;
+ }
+ .user-menu-dropdown a:hover {
+    background-color: var(--bg-dark);
+    color: var(--accent-primary);
+ }
+ .logout-link {
+    border-top: 1px solid var(--border-color);
+ }
+
+ /* ---- 4. Page-Specific Styles ---- */
+
+ /* Styles for profile.php */
+ .page-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+ }
+ .activity-placeholder, .movie-grid-placeholder, .profile-card {
+    background-color: var(--bg-dark); /* Use the deepest dark for inner cards */
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+ }
+ .profile-info {
+    margin-bottom: 1.5rem;
+    text-align: left;
+ }
+ .profile-info label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+ }
+ .profile-info p {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-light);
+ }
+ 
+ /* Styles for index.php */
+ .welcome-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    background-color: var(--surface-dark);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+ }
+
+ .welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+ }
+
+ .welcome-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+ }
+
+ .welcome-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+ }
+
+
+/* Styles for movies.php Search Page */
+.flash-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    background-color: var(--surface-dark);
+    color: var(--accent-secondary);
+    border: 1px solid var(--accent-secondary);
+}
+
+.search-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background-color: var(--bg-dark);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+}
+
+.search-header-text h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-header-text p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.search-form {
+    display: flex;
+    min-width: 500px;
+    gap: 0.5rem;
+}
+.search-input-large {
+    flex-grow: 1;
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+}
+
+.results-title {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.movie-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.movie-result-item {
+    display: flex;
+    justify-content: space-between; /* This pushes the info and actions apart */
+    align-items: center; /* This vertically centers the content */
+    gap: 1.5rem;
+    background-color: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.movie-info {
+    display: flex;
+    align-items: flex-start; /* Align items to the top */
+    gap: 1.5rem;
+    flex-grow: 1; /* Allow this section to take up available space */
+}
+
+.movie-result-item img {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.movie-details h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+.movie-details h3 span {
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+.plot-summary {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.movie-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0; /* Prevents the actions section from shrinking */
+    margin-left: 1rem; /* Adds some space between details and the button */
+}
+
+.movie-actions form {
+    margin: 0;
+}
+
+.movie-actions .btn {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.btn-watchlist {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+.btn-watchlist:hover {
+    background-color: var(--surface-dark);
+    border-color: var(--text-secondary);
+    color: var(--text-light);
+}
+
+
+ .btn-danger {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-on-accent);
+ }
+
+ .btn-danger:hover {
+    background-color: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
+ }
+
+ .section-divider {
+    margin: 2rem 0;
+    border-color: var(--border-color);
+ }
+
+/* Styles for mylist.php */
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.mylist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.mylist-card {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mylist-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card-poster {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    background-color: var(--surface-dark);
+}
+
+.card-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-watchlist {
+    background-color: var(--accent-secondary);
+    color: var(--bg-dark);
+}
+
+.status-watched {
+    background-color: var(--accent-primary);
+    color: var(--text-on-accent);
+}
+
+.card-content {
+    padding: 0.75rem;
+}
+
+.card-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.card-year {
+    color: var(--text-secondary);
+    font-weight: normal;
+    font-size: 0.85rem;
+}
+
+.card-rating {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--surface-dark);
+    border-radius: 4px;
+}
+
+.rating-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rating-form label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+}
+
+.rating-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.rating-number-input {
+    width: 45px;
+    padding: 0.4rem;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.rating-number-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.rating-number-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.rating-unrated {
+    border-color: var(--accent-secondary);
+    background-color: rgba(242, 169, 0, 0.1);
+}
+
+.rating-max {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.card-actions button {
+    flex: 1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--bg-dark);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Footer Styles */
+.site-footer {
+    background-color: var(--surface-dark);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+    padding: 1rem 1.5rem;
+    flex-shrink: 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.footer-brand {
+    color: var(--text-light);
+    font-family: var(--font-heading);
+}
+
+.footer-brand strong {
+    color: var(--accent-primary);
+}
+

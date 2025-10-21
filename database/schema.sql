@@ -31,6 +31,7 @@ CREATE TABLE if NOT EXISTS ratings (
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
     score_10 TINYINT NOT NULL CHECK (score_10 >= 1 AND score_10 <= 10),
+    status ENUM('watched', 'watchlist') NOT NULL DEFAULT 'watchlist',
     review TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

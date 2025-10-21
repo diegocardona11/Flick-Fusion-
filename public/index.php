@@ -8,15 +8,27 @@ if (!defined('FLICK_FUSION_ENTRY_POINT')) {
 
 include 'partials/header.php';
 ?>
-<main>
-  <?php if (!empty($_SESSION['user_id'])): ?>
-    <h1>Welcome back, <?= htmlspecialchars($_SESSION['username'] ?? 'user') ?>!</h1>
-    <p>Go to your <a href="dashboard.php">Dashboard</a> or <a href="/movies.php">Search Movies</a>.</p>
-  <?php else: ?>
-    <h1>Welcome to Flick Fusion 🎬</h1>
-    <p><a href="login.php">Login</a> or 
-       <a href="register.php">Register</a> to start tracking your movies.</p>
-    <p>Or try the <a href="movies.php">Movies search</a> right now.</p>
-  <?php endif; ?>
+
+<main class="container">
+  <div class="welcome-message">
+    <?php if (!empty($_SESSION['user_id'])): ?>
+      <!-- Logged in user greeting -->
+      <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($_SESSION['username'] ?? 'user') ?>!</h1>
+      <p class="welcome-subtitle">Discover new movies and manage your watchlist.</p>
+      <div class="welcome-actions">
+          <a href="mylist.php" class="btn btn-primary">Go to My List</a>
+          <a href="movies.php" class="btn btn-secondary">Search Movies</a>
+      </div>
+    <?php else: ?>
+      <!-- Guest user greeting -->
+      <h1 class="welcome-title">Welcome to Flick Fusion!</h1>
+      <p class="welcome-subtitle">Discover new movies and manage your watchlist.</p>
+      <div class="welcome-actions">
+        <a href="login.php" class="btn btn-primary">Login</a>
+        <a href="register.php" class="btn btn-secondary">Register</a>
+      </div>
+    <?php endif; ?>
+  </div>
 </main>
+
 <?php include 'partials/footer.php'; ?>

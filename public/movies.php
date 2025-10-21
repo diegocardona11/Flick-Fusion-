@@ -1,173 +1,128 @@
 <?php
 // Define entry point for backend includes
 if (!defined('FLICK_FUSION_ENTRY_POINT')) {
-  define('FLICK_FUSION_ENTRY_POINT', true);
+    define('FLICK_FUSION_ENTRY_POINT', true);
 }
 
-require __DIR__ . '/../backend/api/omdb.php';
-require __DIR__ . '/_db.php';
-require_once __DIR__ . '/../backend/controllers/movies.php';
-include 'partials/header.php';
+// Start session first
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// connect to DB
-$pdo = db();
-$userId = 1;  // temp user until auth
+require_once __DIR__ . '/../backend/config/db.php';
+require_once __DIR__ . '/../backend/controllers/movies.php';
+require_once __DIR__ . '/../backend/controllers/ratings.php';
+
+// $pdo is now available from db.php
+$userId = $_SESSION['user_id'] ?? null;
 $flash = '';
 
-// ---------------------------
-// Handle POST Actions
-// ---------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // ADD TO LIST
-  if (!empty($_POST['imdbID'])) {
-    $imdbID = trim($_POST['imdbID']);
-    $movieId = addMovieToLocalDB($pdo, $imdbID);
-    if ($movieId) {
-      addMovieToUserList($pdo, $userId, $movieId, 5);
-      $flash = "✅ Added to your list!";
-    } else {
-      $flash = "⚠️ Couldn't fetch movie details.";
-    }
-  }
+// Handle "Add to List" form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['imdb_id'])) {
+    $api_id = $_POST['imdb_id'];
+    $local_movie_id = addMovieToLocalDB($pdo, $api_id);
 
-  // UPDATE RATING
-  if (!empty($_POST['movie_id']) && isset($_POST['score'])) {
-    $movieId = (int)$_POST['movie_id'];
-    $score   = (int)$_POST['score'];
-    if (updateRating($pdo, $userId, $movieId, $score)) {
-      $flash = "⭐ Rating updated.";
+    if ($local_movie_id) {
+        // Get the movie title from the database
+        $stmt = $pdo->prepare("SELECT title FROM movies WHERE movie_id = ?");
+        $stmt->execute([$local_movie_id]);
+        $movie = $stmt->fetch(PDO::FETCH_ASSOC);
+        $movieTitle = $movie['title'] ?? 'Movie';
+        
+        // Determine the status based on which button was clicked
+        $status = isset($_POST['add_to_watchlist']) ? 'watchlist' : 'watched';
+        
+        if (addMovieToUserList($pdo, $userId, $local_movie_id, $status)) {
+            $flash = "\"$movieTitle\" was added to your watchlist!";
+        } else {
+            $flash = "\"$movieTitle\" is already in your list.";
+        }
     } else {
-      $flash = "⚠️ Could not update rating.";
+        $flash = "Could not fetch movie details from the API.";
     }
-  }
 
-  // REMOVE FROM LIST
-  if (!empty($_POST['remove_movie_id'])) {
-    $movieId = (int)$_POST['remove_movie_id'];
-    if (removeMovieFromUserList($pdo, $userId, $movieId)) {
-      $flash = "🗑️ Removed from your list.";
-    } else {
-      $flash = "⚠️ Could not remove movie.";
-    }
-  }
-
-  // Optional: PRG pattern to avoid resubmission on refresh
-  // Keep q in the URL if user was searching
-  $qParam = isset($_GET['q']) ? ('?q=' . urlencode($_GET['q'])) : '';
-  header("Location: movies.php{$qParam}&flash=" . urlencode($flash));
-  exit;
+    // Redirect to the same search page to prevent form resubmission
+    $qParam = isset($_GET['q']) ? ('?q=' . urlencode($_GET['q'])) : '';
+    header("Location: movies.php{$qParam}&flash=" . urlencode($flash));
+    exit;
 }
 
-// pick up flash via GET (from redirect)
+// Get flash message from redirect
 if (isset($_GET['flash'])) {
-  $flash = $_GET['flash'];
+    $flash = $_GET['flash'];
 }
 
-// ---------------------------
-// Search
-// ---------------------------
-$q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$results = $q !== '' ? omdb_search($q) : [];
+// Handle search query
+$q = trim($_GET['q'] ?? '');
+$search_results = [];
 
-// ---------------------------
-// My List for this user
-// ---------------------------
-$myList = getMoviesForUser($pdo, $userId);
+// Only search if query is not empty
+if ($q !== '') {
+    $basic_results = omdb_search($q);
+
+    // For each result, get detailed information including plot
+    if ($basic_results) {
+        foreach ($basic_results as $movie) {
+            $detailed = omdb_fetch_by_id($movie['imdbID']);
+            if ($detailed) {
+                $search_results[] = $detailed;
+            }
+        }
+    }
+}
+
+include 'partials/header.php';
 ?>
 
-<div class="container">
-  <h2>Search Movies</h2>
+<main class="container">
+    <div class="search-page-header">
+        <div class="search-header-text">
+            <h1>Find Your Next Favorite Film</h1>
+            <p>Search for any movie and add it to your collection.</p>
+        </div>
+        <form method="get" action="movies.php" class="search-form">
+            <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="e.g., The Matrix, Star Wars..." class="form-input search-input-large" required>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
 
-  <?php if ($flash): ?>
-    <p style="color: #0a0; margin-top:8px;"><?= htmlspecialchars($flash) ?></p>
-  <?php endif; ?>
-
-  <form method="get" action="movies.php" class="form-box">
-    <input
-      type="text"
-      name="q"
-      value="<?= htmlspecialchars($q) ?>"
-      placeholder="Search title..."
-      required
-      style="width:70%;padding:10px;"
-    >
-    <button type="submit" class="btn">Search</button>
-  </form>
-
-  <?php if ($q !== ''): ?>
-    <h3>Results for "<?= htmlspecialchars($q) ?>"</h3>
-    <?php if ($results): ?>
-      <ul style="list-style:none;padding-left:0;">
-        <?php foreach ($results as $m): ?>
-          <li style="margin-bottom:18px;border:1px solid #ddd;border-radius:8px;padding:12px;">
-            <strong><?= htmlspecialchars($m['Title']) ?></strong>
-            (<?= htmlspecialchars($m['Year']) ?>)
-            <?php if (!empty($m['Poster']) && $m['Poster'] !== 'N/A'): ?>
-              <br><img src="<?= htmlspecialchars($m['Poster']) ?>" width="100" alt="Poster">
-            <?php endif; ?>
-
-            <!-- Add to My List -->
-            <form method="post" action="movies.php" style="margin-top:8px;">
-              <input type="hidden" name="imdbID" value="<?= htmlspecialchars($m['imdbID']) ?>">
-              <button type="submit" class="btn">Add to My List</button>
-            </form>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    <?php else: ?>
-      <p>No results found.</p>
+    <!-- Display flash message if any -->
+    <?php if ($flash): ?>
+        <p class="flash-message"><?= htmlspecialchars($flash) ?></p>
     <?php endif; ?>
-  <?php endif; ?>
 
-  <!-- My List Section -->
-  <hr style="margin:24px 0;">
-  <h2>My List</h2>
+    <!-- This appears after a search has been performed -->
+    <?php if ($q !== ''): ?>
+        <h2 class="results-title">Results for "<?= htmlspecialchars($q) ?>"</h2>
+        
+        <?php if ($search_results): ?>
+            <ul class="movie-results-list">
+                <?php foreach ($search_results as $m): ?>
+                    <li class="movie-result-item">
+                        <div class="movie-info">
+                            <img src="<?= htmlspecialchars($m['Poster'] !== 'N/A' ? $m['Poster'] : 'https://placehold.co/100x150/252528/A9A9A9?text=N/A') ?>" alt="Poster for <?= htmlspecialchars($m['Title']) ?>">
+                            <div class="movie-details">
+                                <h3><?= htmlspecialchars($m['Title']) ?> <span>(<?= htmlspecialchars($m['Year']) ?>)</span></h3>
+                                <p class="plot-summary"><?= htmlspecialchars($m['Plot'] ?? 'No plot summary available.') ?></p>
+                            </div>
+                        </div>
+                        
+                        <?php if ($userId): // Only show the form if the user is logged in ?>
+                            <div class="movie-actions">
+                                <form method="post" action="movies.php?q=<?= urlencode($q) ?>" class="form-inline">
+                                    <input type="hidden" name="imdb_id" value="<?= htmlspecialchars($m['imdbID']) ?>">
+                                    <button type="submit" name="add_to_watchlist" class="btn btn-primary">Add to Watchlist</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p class="no-results">No movies found matching your query.</p>
+        <?php endif; ?>
+    <?php endif; ?>
 
-  <?php if ($myList): ?>
-    <ul style="list-style:none;padding-left:0;">
-      <?php foreach ($myList as $row): ?>
-        <li style="margin-bottom:18px;border:1px solid #ddd;border-radius:8px;padding:12px;">
-          <div style="display:flex;gap:12px;align-items:center;">
-            <?php if (!empty($row['poster_url'])): ?>
-              <img src="<?= htmlspecialchars($row['poster_url']) ?>" width="60" alt="Poster">
-            <?php endif; ?>
-            <div>
-              <strong><?= htmlspecialchars($row['title']) ?></strong>
-              <?php if (!empty($row['year'])): ?>
-                (<?= (int)$row['year'] ?>)
-              <?php endif; ?>
-              <div style="margin-top:6px;">
-                <!-- Update Rating -->
-                <form method="post" action="movies.php" style="display:inline-block;margin-right:8px;">
-                  <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
-                  <label>
-                    Rating:
-                    <input
-                      type="number"
-                      name="score"
-                      min="1"
-                      max="10"
-                      value="<?= (int)($row['score_10'] ?? 5) ?>"
-                      style="width:60px;"
-                    >
-                  </label>
-                  <button type="submit" class="btn">Update</button>
-                </form>
-
-                <!-- Remove from List -->
-                <form method="post" action="movies.php" style="display:inline-block;">
-                  <input type="hidden" name="remove_movie_id" value="<?= (int)$row['movie_id'] ?>">
-                  <button type="submit" class="btn" style="background:#d33;border-color:#d33;">Remove</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  <?php else: ?>
-    <p>You haven’t added any movies yet.</p>
-  <?php endif; ?>
-</div>
+</main>
 
 <?php include 'partials/footer.php'; ?>

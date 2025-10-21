@@ -8,26 +8,75 @@
  *   - retrieving ratings for a movie
  */
 
+// Prevents direct script access
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    http_response_code(403); // Forbidden
+    exit('Access denied.');
+}
+
+require_once __DIR__ . '/../api/omdb.php'; // uses your OMDb key
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Rating.php';
 
-// Add a new rating
-function addRating($userId, $movieId, $score, $comment) {   
-    // TODO: Implement logic to add a new rating
+/**
+ * Adds a movie to a user's list (watchlist or watched).
+ * @param PDO $pdo The database connection
+ * @param int $userId The user's ID
+ * @param int $movieId The movie's ID
+ * @param string $status The status ('watchlist' or 'watched')
+ * @param int|null $score Optional score (1-10), defaults to 5 for watchlist
+ * @return bool True on success, false on failure
+ */
+function addMovieToUserList(PDO $pdo, int $userId, int $movieId, string $status = 'watchlist', ?int $score = null): bool {
+    try {
+        // If no score provided, default to 5
+        if ($score === null) {
+            $score = 5;
+        }
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO ratings (user_id, movie_id, score_10, status) VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE score_10 = VALUES(score_10), status = VALUES(status)
+        ");
+        return $stmt->execute([$userId, $movieId, $score, $status]);
+    } catch (PDOException $e) {
+        error_log("Error in addMovieToUserList: " . $e->getMessage());
+        return false;
+    }
 }
 
-// Update an existing rating
-function updateRating($ratingId, $score, $comment) {
-    // TODO: Implement logic to update an existing rating
+/**
+ * Gets all movies for a specific user.
+ */
+function getMoviesForUser(PDO $pdo, int $userId): array {
+    $stmt = $pdo->prepare("
+        SELECT m.movie_id, m.title, m.year, m.poster_url, r.score_10 as rating, r.status
+        FROM ratings r
+        JOIN movies m ON m.movie_id = r.movie_id
+        WHERE r.user_id = ?
+        ORDER BY m.title
+    ");
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
-// Delete a rating
-function deleteRating($ratingId) {
-    // TODO: Implement logic to delete a rating
+/**
+ * Updates a rating for a user's movie.
+ */
+function updateRating(PDO $pdo, int $userId, int $movieId, int $score): bool {
+    $score = max(1, min(10, $score));
+    $stmt = $pdo->prepare("
+        UPDATE ratings SET score_10 = ?, status = 'watched', updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ? AND movie_id = ?
+    ");
+    return $stmt->execute([$score, $userId, $movieId]);
 }
 
-// Retrieve ratings for a specific movie
-function getRatingsForMovie($movieId) {
-    // TODO: Implement logic to retrieve ratings for a specific movie
+/**
+ * Removes a movie from a user's list.
+ */
+function removeMovieFromUserList(PDO $pdo, int $userId, int $movieId): bool {
+    $stmt = $pdo->prepare("DELETE FROM ratings WHERE user_id = ? AND movie_id = ?");
+    return $stmt->execute([$userId, $movieId]);
 }
+
