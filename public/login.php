@@ -9,7 +9,7 @@ if (!defined('FLICK_FUSION_ENTRY_POINT')) {
  *   - Collects username/email and password
  *   - Validates inputs (non-empty, email format, password match)
  *   - Calls loginUser() from auth.php
- *   - Redirect to dashboard.php on success
+ *   - Redirect to index.php on success
  */
 
 require_once __DIR__ . '/../backend/controllers/auth.php'; // authentication controller
@@ -19,9 +19,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// If user is already logged in, redirect to dashboard
+// If user is already logged in, redirect to index
 if (!empty($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
+    header('Location: index.php');
     exit();
 }
 
@@ -51,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginSuccess = loginUser($identifier, $password);
         
         if ($loginSuccess) {
-            // Login successful, redirect to dashboard
-            header('Location: dashboard.php');
+            // Login successful, redirect to index.php
+            header('Location: index.php');
             exit();
         } else {
             // Login failed (invalid credentials)

@@ -24,15 +24,21 @@ require_once __DIR__ . '/../models/Rating.php';
  * @param int $userId The user's ID
  * @param int $movieId The movie's ID
  * @param string $status The status ('watchlist' or 'watched')
+ * @param int|null $score Optional score (1-10), defaults to 5 for watchlist
  * @return bool True on success, false on failure
  */
-function addMovieToUserList(PDO $pdo, int $userId, int $movieId, ?int $score = null): bool {
+function addMovieToUserList(PDO $pdo, int $userId, int $movieId, string $status = 'watchlist', ?int $score = null): bool {
     try {
+        // If no score provided, default to 5
+        if ($score === null) {
+            $score = 5;
+        }
+        
         $stmt = $pdo->prepare("
-            INSERT INTO ratings (user_id, movie_id, score_10) VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE score_10 = VALUES(score_10)
+            INSERT INTO ratings (user_id, movie_id, score_10, status) VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE score_10 = VALUES(score_10), status = VALUES(status)
         ");
-        return $stmt->execute([$userId, $movieId, $score]);
+        return $stmt->execute([$userId, $movieId, $score, $status]);
     } catch (PDOException $e) {
         error_log("Error in addMovieToUserList: " . $e->getMessage());
         return false;

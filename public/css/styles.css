@@ -109,7 +109,7 @@ main.container {
 
  .btn-primary {
     background-color: var(--accent-primary);
-    border-color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
     color: var(--text-on-accent);
  }
  .btn-primary:hover {
@@ -119,7 +119,7 @@ main.container {
 
  .btn-secondary {
     background-color: transparent;
-    border-color: var(--border-color);
+    border-color: 1px solid var(--border-color);
     color: var(--text-light);
  }
  .btn-secondary:hover {
@@ -142,18 +142,21 @@ main.container {
     margin-top: 0.5rem;
  }
 
+
  /* Header Styles */
  .main-header {
     background-color: var(--surface-dark);
-    padding: 0;
+    padding: 0 1.5rem;
     border-bottom: 1px solid var(--border-color);
+    height: 70px;
+    display: flex;
+    align-items: center;
  }
 
  .header-content {
     display: flex;
     align-items: center;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    width: 100%;
  }
 
  .logo {
@@ -219,13 +222,13 @@ main.container {
     overflow: hidden;
  }
  .search-input {
-    background-color: var(--form-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background: none;
+    border: none;
     color: var(--text-light);
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    padding: 0.5rem 1rem;
     width: 220px;
-    transition: all 0.3s ease;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
  }
  .search-input:focus {
     outline: none;
@@ -321,7 +324,37 @@ main.container {
 
  /* ---- 4. Page-Specific Styles ---- */
 
- /* Styles for the welcome section on index.php */
+ /* Styles for profile.php */
+ .page-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+ }
+ .activity-placeholder, .movie-grid-placeholder, .profile-card {
+    background-color: var(--bg-dark); /* Use the deepest dark for inner cards */
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+ }
+ .profile-info {
+    margin-bottom: 1.5rem;
+    text-align: left;
+ }
+ .profile-info label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+ }
+ .profile-info p {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-light);
+ }
+ 
+ /* Styles for index.php */
  .welcome-message {
     text-align: center;
     padding: 2rem 1rem;
@@ -402,6 +435,132 @@ main.container {
     width: 60px;
     margin: 0 0.5rem;
  }
+
+
+/* Movie Search and Result Layout */
+/* ---- 4. Page-Specific Styles ---- */
+
+/* Styles for movies.php Search Page */
+.search-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background-color: var(--bg-dark);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+}
+
+.search-header-text h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-header-text p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.search-form {
+    display: flex;
+    min-width: 500px;
+    gap: 0.5rem;
+}
+.search-input-large {
+    flex-grow: 1;
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+}
+
+.results-title {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.movie-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.movie-result-item {
+    display: flex;
+    justify-content: space-between; /* This pushes the info and actions apart */
+    align-items: center; /* This vertically centers the content */
+    gap: 1.5rem;
+    background-color: var(--surface-dark);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.movie-info {
+    display: flex;
+    align-items: flex-start; /* Align items to the top */
+    gap: 1.5rem;
+    flex-grow: 1; /* Allow this section to take up available space */
+}
+
+.movie-result-item img {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.movie-details h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+.movie-details h3 span {
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+.plot-summary {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.movie-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0; /* Prevents the actions section from shrinking */
+    margin-left: 1rem; /* Adds some space between details and the button */
+}
+
+.movie-actions form {
+    margin: 0;
+}
+
+.movie-actions .btn {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.btn-watchlist {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+.btn-watchlist:hover {
+    background-color: var(--surface-dark);
+    border-color: var(--text-secondary);
+    color: var(--text-light);
+}
+
 
  .btn-danger {
     background-color: var(--accent-primary);
