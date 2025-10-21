@@ -79,6 +79,16 @@
     max-width: 450px;
 }
 
+/* Style for the main content area of each page */
+main.container {
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+
  /* ---- 3. Component Styles ---- */
  /* This section includes styles for common components used across the site. */
 
@@ -310,6 +320,35 @@
 
 
  /* ---- 4. Page-Specific Styles ---- */
+
+ /* Styles for the welcome section on index.php */
+ .welcome-message {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: var(--surface-dark);
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
+    border: 1px solid var(--border-color);
+ }
+
+ .welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+ }
+
+ .welcome-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+ }
+
+ .welcome-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+ }
+
 
  /* Styles for the movies.php page */
  .flash-message {
