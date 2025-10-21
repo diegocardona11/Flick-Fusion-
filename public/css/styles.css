@@ -82,6 +82,7 @@
  /* ---- 3. Component Styles ---- */
  /* This section includes styles for common components used across the site. */
 
+/* Header & Navigation */
  header {
     background-color: var(--surface-dark);
     padding: 1rem 2rem;
@@ -106,9 +107,121 @@
  }
 
  header span {
-    margin-left: auto; /* Pushes user info to the right */
+    margin-left: auto; 
     color: var(--text-secondary);
  }
+
+.header-content { 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.main-nav {
+    display: flex;
+    gap: 1.5rem;
+ }
+
+ .header-actions {
+    display: flex;
+    gap: 1.5rem;
+ }
+
+ /* Header Search Bar */
+ .header-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+ }
+
+ .search-input {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    display: flex;
+}
+
+.search-button:hover {
+    color: var(--text-light);
+}
+
+/* User Dropdown Menu */
+.user-menu {
+    position: relative;
+}
+
+.user-menu-trigger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    display: flex;
+}
+
+.user-menu-trigger:hover {
+    color: var(--text-light);
+}
+
+.user-menu-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 150%;
+    right: 0;
+    background-color: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    z-index: 100;
+}
+
+.user-menu-dropdown.is-open {
+    display: block; /* Show when open */
+}
+
+.dropdown-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.user-menu-dropdown a {
+    color: var(--text-light);
+    padding: 0.75rem 1rem;
+    display: block;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.user-menu-dropdown a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    text-decoration: none;
+}
+
+.user-menu-dropdown .logout-link {
+    color: var(--accent-primary);
+}
 
 
 

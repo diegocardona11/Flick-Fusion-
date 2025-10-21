@@ -5,6 +5,6 @@
 <footer>
     <p>&copy; <?php echo date("Y"); ?> Flick Fusion. All rights reserved.</p>
 </footer>
-<script src="js/scripts.js"></script>
+<script src="/js/app.js?v=<?= filemtime(__DIR__ . '/../js/app.js') ?>"></script>
 </body>
 </html>
