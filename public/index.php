@@ -16,7 +16,7 @@ include 'partials/header.php';
       <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($_SESSION['username'] ?? 'user') ?>!</h1>
       <p class="welcome-subtitle">Discover new movies and manage your watchlist.</p>
       <div class="welcome-actions">
-          <a href="dashboard.php" class="btn btn-primary">Go to My List</a>
+          <a href="mylist.php" class="btn btn-primary">Go to My List</a>
           <a href="movies.php" class="btn btn-secondary">Search Movies</a>
       </div>
     <?php else: ?>

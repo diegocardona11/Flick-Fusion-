@@ -30,7 +30,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           <?php if (!empty($_SESSION['user_id'])): ?>
               <a href="index.php">Home</a>
               <a href="movies.php">Movies</a>
-              <a href="dashboard.php">My List</a>
+              <a href="mylist.php">My List</a>
           <?php else: ?>
               <a href="index.php">Explore</a>
               <a href="movies.php">Search</a>

@@ -1,31 +1,38 @@
 <?php
+// Prevents direct script access
+if (!defined('FLICK_FUSION_ENTRY_POINT')) {
+    http_response_code(403); // Forbidden
+    exit('Access denied.');
+}
+
 require_once __DIR__ . '/../api/omdb.php'; // uses your OMDb key
 
 // 1) Add a movie to local DB if it doesn’t exist
 function addMovieToLocalDB(PDO $pdo, string $imdbID): ?int {
   $q = $pdo->prepare("SELECT movie_id FROM movies WHERE api_id = ?");
   $q->execute([$imdbID]);
-  if ($row = $q->fetch(PDO::FETCH_ASSOC)) return (int)$row['movie_id'];
+  if ($row = $q->fetch(PDO::FETCH_ASSOC)) {
+    return (int)$row['movie_id']; // It exists, return its ID
+  } 
 
-  // Fetch from OMDb
-  $url  = "https://www.omdbapi.com/?apikey=" . omdb_api_key() . "&i=" . urlencode($imdbID) . "&plot=short";
-  $json = @file_get_contents($url);
-  if (!$json) return null; // network / OMDb error
+  // If not found, fetch from OMDb
+  $movieData = omdb_fetch_by_id($imdbID);
+  if (!$movieData) { 
+    return null; // network/API failure
+  }
 
-  $m = json_decode($json, true);
-  if (!$m || empty($m['imdbID'])) return null;
-
+  // Insert into local DB
   $ins = $pdo->prepare("
     INSERT INTO movies (api_id, title, year, genre, description, poster_url)
     VALUES (?, ?, ?, ?, ?, ?)
   ");
   $ins->execute([
-    $m['imdbID'],
-    $m['Title'] ?? '',
-    is_numeric($m['Year'] ?? '') ? (int)$m['Year'] : null,
-    $m['Genre'] ?? null,
-    $m['Plot'] ?? null,
-    (!empty($m['Poster']) && $m['Poster'] !== 'N/A') ? $m['Poster'] : null
+    $movieData['imdbID'],
+    $movieData['Title'] ?? '',
+    is_numeric($movieData['Year'] ?? '') ? (int)$movieData['Year'] : null,
+    $movieData['Genre'] ?? null,
+    $movieData['Plot'] ?? null,
+    (!empty($movieData['Poster']) && $movieData['Poster'] !== 'N/A') ? $movieData['Poster'] : null
   ]);
 
   return (int)$pdo->lastInsertId();
@@ -53,17 +60,6 @@ function getMoviesForUser(PDO $pdo, int $userId): array {
   ");
   $stmt->execute([$userId]);
   return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// 4) Update a rating
-function updateRating(PDO $pdo, int $userId, int $movieId, int $score): bool {
-  $score = max(1, min(10, $score));
-  $stmt = $pdo->prepare("
-    UPDATE ratings
-    SET score_10 = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE user_id = ? AND movie_id = ?
-  ");
-  return $stmt->execute([$score, $userId, $movieId]);
 }
 
 // 5) Remove movie from user’s list
