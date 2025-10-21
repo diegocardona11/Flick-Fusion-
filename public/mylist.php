@@ -61,48 +61,90 @@ include 'partials/header.php';
 ?>
 
 <main class="container">
-    <h2>My Movie List</h2>
-    <p>Welcome, <strong><?= $username ?></strong>! This is your personal movie list.</p>
+    <div class="page-header">
+        <h1>My Watchlist</h1>
+        <p>Welcome, <strong><?= $username ?></strong>! Manage your personal movie collection.</p>
+    </div>
 
     <?php if ($flash): ?>
         <p class="flash-message"><?= htmlspecialchars($flash) ?></p>
     <?php endif; ?>
 
-    <hr class="section-divider">
-
     <?php if ($myList): ?>
-        <ul class="movie-list">
+        <div class="mylist-grid">
             <?php foreach ($myList as $row): ?>
-                <li class="movie-list-item">
-                    <?php if (!empty($row['poster_url'])): ?>
-                        <img src="<?= htmlspecialchars($row['poster_url']) ?>" alt="Poster">
-                    <?php endif; ?>
-                    <div class="movie-details">
-                        <strong><?= htmlspecialchars($row['title']) ?></strong>
-                        <?php if (!empty($row['year'])): ?>
-                            (<?= (int)$row['year'] ?>)
+                <div class="mylist-card">
+                    <div class="card-poster">
+                        <?php if (!empty($row['poster_url'])): ?>
+                            <img src="<?= htmlspecialchars($row['poster_url']) ?>" alt="<?= htmlspecialchars($row['title']) ?> Poster">
+                        <?php else: ?>
+                            <img src="https://placehold.co/200x300/252528/A9A9A9?text=No+Poster" alt="No Poster Available">
                         <?php endif; ?>
-                        <div class="movie-actions">
-                            <!-- Update Rating -->
-                            <form method="post" action="mylist.php" class="form-inline">
-                                <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
-                                <label>Rating:</label>
-                                <input type="number" name="score" min="1" max="10" value="<?= (int)($row['rating'] ?? '') ?>" class="rating-input" placeholder="-">
-                                <button type="submit" name="update_rating" class="btn">Update</button>
-                            </form>
-
-                            <!-- Remove from List -->
-                            <form method="post" action="mylist.php" class="form-inline">
-                                <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
-                                <button type="submit" name="remove_movie" class="btn btn-danger">Remove</button>
-                            </form>
+                        <?php if (!empty($row['status'])): ?>
+                            <span class="status-badge status-<?= htmlspecialchars($row['status']) ?>">
+                                <?= htmlspecialchars(ucfirst($row['status'])) ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="card-content">
+                        <h3 class="card-title">
+                            <?= htmlspecialchars($row['title']) ?>
+                            <?php if (!empty($row['year'])): ?>
+                                <span class="card-year">(<?= (int)$row['year'] ?>)</span>
+                            <?php endif; ?>
+                        </h3>
+                        
+                        <div class="card-rating">
+                            <div class="rating-input-group">
+                                <label for="score-<?= (int)$row['movie_id'] ?>">Rating:</label>
+                                <div class="rating-display">
+                                    <?php if (!empty($row['rating']) && $row['status'] === 'watched'): ?>
+                                        <input type="number" 
+                                               id="score-<?= (int)$row['movie_id'] ?>"
+                                               form="rating-form-<?= (int)$row['movie_id'] ?>"
+                                               name="score" 
+                                               min="1" 
+                                               max="10" 
+                                               value="<?= (int)$row['rating'] ?>" 
+                                               class="rating-number-input">
+                                        <span class="rating-max">/10</span>
+                                    <?php else: ?>
+                                        <input type="number" 
+                                               id="score-<?= (int)$row['movie_id'] ?>"
+                                               form="rating-form-<?= (int)$row['movie_id'] ?>"
+                                               name="score" 
+                                               min="1" 
+                                               max="10" 
+                                               placeholder="?"
+                                               class="rating-number-input rating-unrated">
+                                        <span class="rating-max">/10</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="card-actions">
+                                <form id="rating-form-<?= (int)$row['movie_id'] ?>" method="post" action="mylist.php">
+                                    <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
+                                    <button type="submit" name="update_rating" class="btn btn-sm btn-primary">Update</button>
+                                </form>
+                                <form method="post" action="mylist.php">
+                                    <input type="hidden" name="movie_id" value="<?= (int)$row['movie_id'] ?>">
+                                    <button type="submit" name="remove_movie" class="btn btn-sm btn-danger" onclick="return confirm('Remove <?= htmlspecialchars(addslashes($row['title'])) ?> from your list?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </li>
+                </div>
             <?php endforeach; ?>
-        </ul>
+        </div>
     <?php else: ?>
-        <p>You haven’t added any movies yet. <a href="movies.php">Go add some!</a></p>
+        <div class="empty-state">
+            <p>Your watchlist is empty.</p>
+            <a href="movies.php" class="btn btn-primary">Start Adding Movies</a>
+        </div>
     <?php endif; ?>
 </main>
 
