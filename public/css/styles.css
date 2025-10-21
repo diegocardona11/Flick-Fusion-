@@ -36,12 +36,19 @@
     --font-body: 'Merriweather', serif;
  }
 
+ html {
+    height: 100%;
+ }
+
  body {
     background-color: var(--bg-dark);
     color: var(--text-light);
     font-family: var(--font-body);
     margin: 0;
     line-height: 1.6;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
  }
 
  h1, h2, h3, h4, h5, h6 {
@@ -86,6 +93,10 @@ main.container {
     border-radius: var(--border-radius);
     margin-top: 2rem;
     margin-bottom: 2rem;
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
 }
 
 
@@ -119,7 +130,7 @@ main.container {
 
  .btn-secondary {
     background-color: transparent;
-    border-color: 1px solid var(--border-color);
+    border: 1px solid var(--border-color);
     color: var(--text-light);
  }
  .btn-secondary:hover {
@@ -151,6 +162,7 @@ main.container {
     height: 70px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
  }
 
  .header-content {
@@ -315,12 +327,6 @@ main.container {
  .logout-link {
     border-top: 1px solid var(--border-color);
  }
- /*
- * ========================================
- * END OF HEADER STYLE EDITS
- * ========================================
- */
-
 
  /* ---- 4. Page-Specific Styles ---- */
 
@@ -357,23 +363,22 @@ main.container {
  /* Styles for index.php */
  .welcome-message {
     text-align: center;
-    padding: 2rem 1rem;
+    padding: 3rem 2rem;
     background-color: var(--surface-dark);
     border-radius: var(--border-radius);
-    margin-top: 2rem;
     border: 1px solid var(--border-color);
  }
 
  .welcome-title {
     font-size: 2.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
  }
 
  .welcome-subtitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--text-secondary);
     max-width: 600px;
-    margin: 0 auto 2rem;
+    margin: 0 auto 1.5rem;
  }
 
  .welcome-actions {
@@ -383,64 +388,16 @@ main.container {
  }
 
 
- /* Styles for the movies.php page */
- .flash-message {
+/* Styles for movies.php Search Page */
+.flash-message {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: var(--border-radius);
     background-color: var(--surface-dark);
     color: var(--accent-secondary);
     border: 1px solid var(--accent-secondary);
- }
+}
 
- .movie-list {
-    list-style: none;
-    padding-left: 0;
-    margin-top: 1.5rem;
- }
-
- .movie-list-item {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    background-color: var(--surface-dark);
-    border: 1px solid var(--border-color);
- }
-
- .movie-list-item img {
-    width: 80px;
-    height: auto;
-    border-radius: 4px;
- }
-
- .movie-details {
-    flex-grow: 1;
- }
-
- .movie-actions {
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
- }
-
- .movie-actions .form-inline {
-    display: inline-block;
- }
-
- .movie-actions .rating-input {
-    width: 60px;
-    margin: 0 0.5rem;
- }
-
-
-/* Movie Search and Result Layout */
-/* ---- 4. Page-Specific Styles ---- */
-
-/* Styles for movies.php Search Page */
 .search-page-header {
     display: flex;
     justify-content: space-between;
@@ -762,5 +719,35 @@ main.container {
     font-size: 1.2rem;
     color: var(--text-secondary);
     margin-bottom: 1.5rem;
+}
+
+/* Footer Styles */
+.site-footer {
+    background-color: var(--surface-dark);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+    padding: 1rem 1.5rem;
+    flex-shrink: 0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.footer-text {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.footer-brand {
+    color: var(--text-light);
+    font-family: var(--font-heading);
+}
+
+.footer-brand strong {
+    color: var(--accent-primary);
 }
 

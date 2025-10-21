@@ -70,5 +70,3 @@ if (session_status() === PHP_SESSION_NONE) session_start();
   </div>
 </header>
 
-<!-- This div will wrap all main page content -->
- <div class="main-content">
