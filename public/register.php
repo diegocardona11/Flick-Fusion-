@@ -13,7 +13,7 @@ if (!defined('FLICK_FUSION_ENTRY_POINT')) {
  *   - Auto-login on success and redirect to dashboard.php
  */
 
-
+require_once __DIR__ . '/../backend/config/db.php';
 require_once __DIR__ . '/../backend/controllers/auth.php'; // authentication controller
 
 // Start session (needed for auto-login and error messages)
@@ -71,15 +71,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ATTEMPT REGISTRATION (if no validation errors)
     if (empty($errors)) {
-        $registration_result = registerUser($username, $email, $password);
+        $registration_result = registerUser($pdo, $username, $email, $password);
         
         if ($registration_result) {
             // Registration successful, auto-login the user
-            $loginSuccess = loginUser($username, $password);
+            $loginSuccess = loginUser($pdo, $username, $password);
 
             if ($loginSuccess) {
                 // Redirect to dashboard after successful login
-                header('Location: dashboard.php');
+                header('Location: mylist.php');
                 exit();
             } else {
                 // Registration succeeded but login failed
