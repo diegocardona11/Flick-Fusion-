@@ -32,8 +32,7 @@ require_once __DIR__ . '/../models/User.php';
  * - inserts the user into the DB
  * - handles duplicate username/email errors
  */
-function registerUser($username, $email, $password) {
-    global $pdo;
+function registerUser(PDO $pdo, $username, $email, $password) {
 
     // Basic validation guard
     if (empty($username) || empty($email) || empty($password)) {
@@ -74,8 +73,7 @@ function registerUser($username, $email, $password) {
  * - Verifies password against stored hash
  * - Starts a session and stores user info in $_SESSION on success
  */
-function loginUser($identifier, $password) {
-    global $pdo;
+function loginUser(PDO $pdo, $identifier, $password) {
 
     // Find user by username or email
     $stmt = $pdo->prepare("
