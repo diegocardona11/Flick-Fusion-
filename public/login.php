@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ATTEMPT LOGIN (if no validation errors)
     if (empty($errors)) {
-        $loginSuccess = loginUser($identifier, $password);
+        $loginSuccess = loginUser($pdo, $identifier, $password);
         
         if ($loginSuccess) {
             // Login successful, redirect to index.php
