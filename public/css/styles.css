@@ -414,9 +414,9 @@ main.container {
 }
 
 .search-header-text p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    margin-bottom: 0;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 0;
 }
 
 .search-form {
@@ -749,5 +749,73 @@ main.container {
 
 .footer-brand strong {
     color: var(--accent-primary);
+}
+
+/* ---- Responsive Design ---- */
+@media (max-width: 1024px) {
+    .container,
+    main.container { padding: 1.5rem 1rem; }
+
+    /* Header stacks across lines */
+    .main-header { height: auto; padding: 0.75rem 1rem; }
+    .header-content { flex-wrap: wrap; gap: 0.75rem; }
+    .logo { order: 1; }
+    .main-nav { order: 2; width: 100%; margin: 0; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .header-actions { order: 3; width: 100%; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; }
+    .header-search { flex: 1 1 320px; }
+
+    /* Search header compresses */
+    .search-page-header { gap: 1rem; padding: 1.25rem; }
+    .search-form { min-width: 0; width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .container,
+    main.container { padding: 1rem 0.75rem; }
+
+    /* Header stacks neatly */
+    .header-content { flex-wrap: wrap; justify-content: center; }
+    .logo { width: 100%; text-align: center; margin-bottom: 0.5rem; }
+    .main-nav { margin-left: 0; margin-right: 0; width: 100%; justify-content: center; gap: 0.75rem; }
+    .header-actions { width: 100%; justify-content: center; gap: 0.75rem; }
+    .header-search { flex: 1 1 100%; }
+    .header-search .search-input { width: 100%; }
+
+    /* Search area stacks */
+    .search-page-header { flex-direction: column; align-items: stretch; padding: 1rem; }
+    .search-header-text h1 { font-size: 2rem; }
+    .search-header-text p { font-size: 1rem; }
+    .search-form { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; min-width: 0; }
+    .search-form .btn { width: 100%; }
+    .search-input-large { width: 100%; }
+
+    /* Movie results become vertical cards */
+    .movie-result-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .movie-info { gap: 1rem; }
+    .movie-result-item img { width: 80px; height: 120px; }
+    .movie-actions { width: 100%; margin-left: 0; }
+    .movie-actions .btn { width: 100%; }
+
+    /* My list grid tightens */
+    .mylist-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+    .card-title { font-size: 0.9rem; }
+
+    /* Forms */
+    .form-box { padding: 1rem; }
+}
+
+@media (max-width: 480px) {
+    .container,
+    main.container { padding: 0.75rem 0.5rem; }
+
+    /* Text sizing */
+    .welcome-title { font-size: 2rem; }
+    .page-header h1 { font-size: 2rem; }
+
+    /* Inputs and small controls */
+    .rating-number-input { width: 40px; }
+
+    /* My list grid smallest columns */
+    .mylist-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 }
 
