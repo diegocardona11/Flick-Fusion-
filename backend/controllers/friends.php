@@ -145,7 +145,7 @@ function searchUsers($query, $currentUserId) {
 
     $sql = "
         SELECT 
-            user_id AS id,       -- alias again
+            user_id AS id, 
             username
         FROM users
         WHERE user_id != :current_id
