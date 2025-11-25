@@ -111,6 +111,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+    
+    // Handle email update
+    if (isset($_POST['update_email'])) {
+        $newEmail = trim($_POST['new_email']);
+        $currentPassword = $_POST['current_password_email'] ?? '';
+        
+        if (empty($newEmail)) {
+            $errorMessage = 'Email cannot be empty.';
+        } elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            $errorMessage = 'Please enter a valid email address.';
+        } elseif (empty($currentPassword)) {
+            $errorMessage = 'Please enter your current password to change email.';
+        } else {
+            // Verify current password
+            $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE user_id = ?");
+            $stmt->execute([$currentUserId]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && password_verify($currentPassword, $user['password_hash'])) {
+                try {
+                    $stmt = $pdo->prepare("UPDATE users SET email = ? WHERE user_id = ?");
+                    if ($stmt->execute([$newEmail, $currentUserId])) {
+                        $_SESSION['email'] = $newEmail;
+                        $currentEmail = $newEmail;
+                        $successMessage = 'Email updated successfully!';
+                    }
+                } catch (PDOException $e) {
+                    if ($e->getCode() == 23000) {
+                        $errorMessage = 'Email already in use.';
+                    } else {
+                        $errorMessage = 'Failed to update email.';
+                    }
+                }
+            } else {
+                $errorMessage = 'Current password is incorrect.';
+            }
+        }
+    }
+    
+    // Handle password update
+    if (isset($_POST['update_password'])) {
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        
+        if (empty($currentPassword)) {
+            $errorMessage = 'Please enter your current password.';
+        } elseif (empty($newPassword)) {
+            $errorMessage = 'Please enter a new password.';
+        } elseif (strlen($newPassword) < 8) {
+            $errorMessage = 'New password must be at least 8 characters long.';
+        } elseif ($newPassword !== $confirmPassword) {
+            $errorMessage = 'New passwords do not match.';
+        } else {
+            // Verify current password
+            $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE user_id = ?");
+            $stmt->execute([$currentUserId]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && password_verify($currentPassword, $user['password_hash'])) {
+                $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE user_id = ?");
+                if ($stmt->execute([$newPasswordHash, $currentUserId])) {
+                    $successMessage = 'Password updated successfully!';
+                } else {
+                    $errorMessage = 'Failed to update password.';
+                }
+            } else {
+                $errorMessage = 'Current password is incorrect.';
+            }
+        }
+    }
 }
 
 // Get current user data
@@ -227,17 +299,98 @@ include 'partials/header.php';
                         <span class="settings-title">Username</span>
                         <span class="settings-arrow">▼</span>
                     </summary>
-                    <div class="settings-content">
-                        <p style="color: var(--text-muted, #888); margin-bottom: 1rem;">Change your display name</p>
-                        <form method="POST" class="profile-form">
-                            <div class="form-group">
+                    <div class="settings-content" style="padding-top: 1.5rem;">
+                        <form method="POST">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
                                 <label for="new_username">New Username</label>
-                                <input type="text" id="new_username" name="new_username" value="<?= htmlspecialchars($currentUsername) ?>" required minlength="3" maxlength="20">
-                                <small>3-20 characters. Must start with a letter and contain only letters, numbers, and underscores.</small>
+                                <input type="text" id="new_username" name="new_username" value="<?= htmlspecialchars($currentUsername) ?>" required minlength="3" maxlength="20" placeholder="Enter new username" style="max-width: 500px;">
+                                <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">3-20 characters. Must start with a letter.</small>
                             </div>
-                            <div class="form-actions">
-                                <button type="submit" name="update_username" class="btn btn-primary">Update Username</button>
+                            <button type="submit" name="update_username" class="btn btn-primary">Update Username</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- Email Management -->
+                <details class="settings-dropdown">
+                    <summary class="settings-header">
+                        <span class="settings-title">Email Address</span>
+                        <span class="settings-arrow">▼</span>
+                    </summary>
+                    <div class="settings-content" style="padding-top: 1.5rem;">
+                        <form method="POST">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="new_email">New Email</label>
+                                <input 
+                                    type="email" 
+                                    id="new_email" 
+                                    name="new_email" 
+                                    value="<?= htmlspecialchars($currentEmail) ?>" 
+                                    required
+                                    placeholder="Enter your new email"
+                                    style="max-width: 500px;"
+                                >
                             </div>
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="current_password_email">Current Password</label>
+                                <input 
+                                    type="password" 
+                                    id="current_password_email" 
+                                    name="current_password_email" 
+                                    required
+                                    placeholder="Confirm your password"
+                                    style="max-width: 500px;"
+                                >
+                            </div>
+                            <button type="submit" name="update_email" class="btn btn-primary">Update Email</button>
+                        </form>
+                    </div>
+                </details>
+
+                <!-- Password Management -->
+                <details class="settings-dropdown">
+                    <summary class="settings-header">
+                        <span class="settings-title">Password</span>
+                        <span class="settings-arrow">▼</span>
+                    </summary>
+                    <div class="settings-content" style="padding-top: 1.5rem;">
+                        <form method="POST">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="current_password">Current Password</label>
+                                <input 
+                                    type="password" 
+                                    id="current_password" 
+                                    name="current_password" 
+                                    required
+                                    placeholder="Enter your current password"
+                                    style="max-width: 500px;"
+                                >
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="new_password">New Password</label>
+                                <input 
+                                    type="password" 
+                                    id="new_password" 
+                                    name="new_password" 
+                                    required 
+                                    minlength="8"
+                                    placeholder="Enter new password (min. 8 characters)"
+                                    style="max-width: 500px;"
+                                >
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="confirm_password">Confirm New Password</label>
+                                <input 
+                                    type="password" 
+                                    id="confirm_password" 
+                                    name="confirm_password" 
+                                    required 
+                                    minlength="8"
+                                    placeholder="Confirm your new password"
+                                    style="max-width: 500px;"
+                                >
+                            </div>
+                            <button type="submit" name="update_password" class="btn btn-primary">Update Password</button>
                         </form>
                     </div>
                 </details>
