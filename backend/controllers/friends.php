@@ -59,7 +59,8 @@ function getPendingFriendRequests($userId) {
         SELECT 
             f.user_id AS requester_id,
             u.user_id AS user_id,
-            u.username
+            u.username,
+            u.avatar_url
         FROM friends f
         JOIN users u ON u.user_id = f.user_id
         WHERE f.friend_id = :uid
@@ -127,7 +128,8 @@ function listFriends($userId) {
     $sql = "
         SELECT 
             u.user_id AS id,
-            u.username
+            u.username,
+            u.avatar_url
         FROM friends f
         JOIN users u ON (
                (f.user_id = :uid AND u.user_id = f.friend_id)

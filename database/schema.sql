@@ -10,6 +10,7 @@ CREATE TABLE if NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,           -- unique usernames
     email VARCHAR(100) NOT NULL UNIQUE,            -- unique emails
     password_hash VARCHAR(255) NOT NULL,            -- hashed passwords
+    avatar_url TEXT,                                -- stores JSON with emoji/color or NULL for default
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
