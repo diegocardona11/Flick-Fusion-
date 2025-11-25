@@ -818,6 +818,38 @@ main.container {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    position: relative;
+}
+
+.alert span {
+    flex: 1;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.alert-close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.alert-close svg {
+    display: block;
 }
 
 .alert-success {
@@ -826,10 +858,26 @@ main.container {
     border: 1px solid #c3e6cb;
 }
 
+.alert-success .alert-close {
+    color: #155724;
+}
+
+.alert-success .alert-close svg {
+    stroke: #155724;
+}
+
 .alert-error {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+.alert-error .alert-close {
+    color: #721c24;
+}
+
+.alert-error .alert-close svg {
+    stroke: #721c24;
 }
 
 .profile-header {
@@ -1119,7 +1167,8 @@ main.container {
 .profile-form input[type="text"],
 .profile-form input[type="email"],
 .profile-form input[type="password"],
-.profile-form input[type="file"] {
+.profile-form input[type="file"],
+.profile-form select {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid var(--border-color, #333);
@@ -1127,6 +1176,18 @@ main.container {
     color: var(--text-light, #fff);
     border-radius: 4px;
     font-size: 1rem;
+}
+
+.profile-form select {
+    cursor: pointer;
+}
+
+.profile-form select:focus,
+.profile-form input[type="text"]:focus,
+.profile-form input[type="email"]:focus,
+.profile-form input[type="password"]:focus {
+    outline: none;
+    border-color: var(--accent-primary, #e50914);
 }
 
 .profile-form input[type="file"] {
@@ -1209,6 +1270,16 @@ main.container {
 
 .friend-avatar-link:hover .friend-name {
     color: var(--accent-primary, #e50914);
+}
+
+.profile-friend-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.profile-friend-actions form {
+    margin: 0;
 }
 
 /* Profile.php responsive styles */

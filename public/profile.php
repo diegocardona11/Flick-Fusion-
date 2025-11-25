@@ -15,6 +15,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../backend/controllers/auth.php';
+require_once __DIR__ . '/../backend/controllers/friends.php';
 require_once __DIR__ . '/../backend/config/db.php';
 
 if (empty($_SESSION['user_id'])) {
@@ -25,6 +26,37 @@ if (empty($_SESSION['user_id'])) {
 $currentUserId = $_SESSION['user_id'];
 $currentUsername = $_SESSION['username'];
 $currentEmail = $_SESSION['email'];
+
+$viewingUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : $currentUserId;
+$isOwnProfile = ($viewingUserId === $currentUserId);
+
+if (!$isOwnProfile) {
+    $stmt = $pdo->prepare("SELECT user_id, username, email, avatar_url, profile_privacy FROM users WHERE user_id = ?");
+    $stmt->execute([$viewingUserId]);
+    $viewedUser = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$viewedUser) {
+        header('Location: index.php');
+        exit;
+    }
+    
+    $displayUsername = $viewedUser['username'];
+    $displayEmail = $viewedUser['email'];
+    $displayUserId = $viewedUser['user_id'];
+    $profilePrivacy = $viewedUser['profile_privacy'] ?? 'public';
+    
+    $friendshipStatus = getFriendshipStatus($currentUserId, $viewingUserId);
+} else {
+    $displayUsername = $currentUsername;
+    $displayEmail = $currentEmail;
+    $displayUserId = $currentUserId;
+    $friendshipStatus = 'self';
+    
+    $stmt = $pdo->prepare("SELECT profile_privacy FROM users WHERE user_id = ?");
+    $stmt->execute([$currentUserId]);
+    $privacyData = $stmt->fetch(PDO::FETCH_ASSOC);
+    $profilePrivacy = $privacyData['profile_privacy'] ?? 'public';
+}
 
 $availableEmojis = ['😀', '😎', '🤖', '🦊', '🐼', '🦁', '🐸', '🐙', '🦄', '🐢', '🦉', '🐝', '🦋', '🐬', '🦈', '🐧', '🦩', '🐨', '🦘', '🐯', '🦒', '🦓', '🐘', '🦏', '🐍', '🦎', '🐊', '🦖', '🦕', '🐉'];
 
@@ -47,6 +79,51 @@ $successMessage = '';
 $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['add_friend']) && !$isOwnProfile) {
+        $result = addFriend($currentUserId, $viewingUserId);
+        if ($result) {
+            $successMessage = 'Friend request sent!';
+            $friendshipStatus = 'pending_sent';
+        } else {
+            $errorMessage = 'Could not send friend request.';
+        }
+    }
+    
+    if (isset($_POST['accept_friend']) && !$isOwnProfile) {
+        $result = acceptFriendRequest($viewingUserId, $currentUserId);
+        if ($result) {
+            $successMessage = 'Friend request accepted!';
+            $friendshipStatus = 'friends';
+        } else {
+            $errorMessage = 'Could not accept friend request.';
+        }
+    }
+    
+    if (isset($_POST['reject_friend']) && !$isOwnProfile) {
+        $result = rejectFriendRequest($viewingUserId, $currentUserId);
+        if ($result) {
+            $successMessage = 'Friend request rejected.';
+            $friendshipStatus = 'none';
+        } else {
+            $errorMessage = 'Could not reject friend request.';
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isOwnProfile) {
+    if (isset($_POST['update_privacy'])) {
+        $newPrivacy = $_POST['profile_privacy'] ?? 'public';
+        if (in_array($newPrivacy, ['public', 'private'])) {
+            $stmt = $pdo->prepare("UPDATE users SET profile_privacy = ? WHERE user_id = ?");
+            if ($stmt->execute([$newPrivacy, $currentUserId])) {
+                $profilePrivacy = $newPrivacy;
+                $successMessage = 'Privacy settings updated successfully!';
+            } else {
+                $errorMessage = 'Failed to update privacy settings.';
+            }
+        }
+    }
+    
     if (isset($_POST['select_avatar'])) {
         $emoji = $_POST['avatar_emoji'] ?? '';
         $color = $_POST['avatar_color'] ?? '';
@@ -174,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $stmt = $pdo->prepare("SELECT avatar_url FROM users WHERE user_id = ?");
-$stmt->execute([$currentUserId]);
+$stmt->execute([$viewingUserId]);
 $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $currentAvatar = null;
@@ -195,19 +272,41 @@ $friendsStmt = $pdo->prepare("
     WHERE f.status = 'accepted'
     LIMIT 10
 ");
-$friendsStmt->execute([$currentUserId, $currentUserId]);
+$friendsStmt->execute([$viewingUserId, $viewingUserId]);
 $friends = $friendsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 include 'partials/header.php';
 ?>
 
 <main class="container profile-page">
+    <?php if (!$isOwnProfile): ?>
+        <div style="margin-bottom: 1rem;">
+            <a href="friends.php" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">← Back to Friends</a>
+        </div>
+    <?php endif; ?>
+    
     <?php if ($successMessage): ?>
-        <div class="alert alert-success"><?= htmlspecialchars($successMessage) ?></div>
+        <div class="alert alert-success" id="successAlert">
+            <span><?= htmlspecialchars($successMessage) ?></span>
+            <button type="button" class="alert-close" onclick="closeAlert('successAlert')" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
     <?php endif; ?>
     
     <?php if ($errorMessage): ?>
-        <div class="alert alert-error"><?= htmlspecialchars($errorMessage) ?></div>
+        <div class="alert alert-error" id="errorAlert">
+            <span><?= htmlspecialchars($errorMessage) ?></span>
+            <button type="button" class="alert-close" onclick="closeAlert('errorAlert')" aria-label="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
     <?php endif; ?>
 
     <section class="profile-header">
@@ -226,11 +325,48 @@ include 'partials/header.php';
             <?php endif; ?>
         </div>
         <div class="profile-info">
-            <h1 class="profile-username"><?= htmlspecialchars($currentUsername) ?></h1>
-            <p class="profile-email"><?= htmlspecialchars($currentEmail) ?></p>
+            <h1 class="profile-username"><?= htmlspecialchars($displayUsername) ?></h1>
+            <?php if ($isOwnProfile): ?>
+                <p class="profile-email"><?= htmlspecialchars($displayEmail) ?></p>
+            <?php else: ?>
+                <div style="margin-top: 1rem;">
+                    <?php if ($friendshipStatus === 'none'): ?>
+                        <form method="POST" style="display: inline-block;">
+                            <button type="submit" name="add_friend" class="btn btn-primary">Add Friend</button>
+                        </form>
+                    <?php elseif ($friendshipStatus === 'pending_sent'): ?>
+                        <button class="btn btn-secondary" disabled>Friend Request Sent</button>
+                    <?php elseif ($friendshipStatus === 'pending_received'): ?>
+                        <form method="POST" style="display: inline-flex; gap: 0.5rem;">
+                            <button type="submit" name="accept_friend" class="btn btn-primary">Accept Request</button>
+                            <button type="submit" name="reject_friend" class="btn btn-secondary">Reject</button>
+                        </form>
+                    <?php elseif ($friendshipStatus === 'friends'): ?>
+                        <button class="btn btn-secondary" disabled>✓ Friends</button>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
+    <?php 
+    $canViewContent = $isOwnProfile || $profilePrivacy === 'public';
+    ?>
+    
+    <?php if (!$isOwnProfile && $profilePrivacy === 'private'): ?>
+        <section class="profile-content">
+            <div style="padding: 3rem 2rem; text-align: center; background: var(--surface-dark); border-radius: 8px; border: 1px solid var(--border-color);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 1rem; color: var(--text-secondary);">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <h2 style="margin: 0 0 0.5rem; color: var(--text-light);">Private Profile</h2>
+                <p style="color: var(--text-secondary); margin: 0;">This user's profile is private.</p>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php if ($canViewContent): ?>
     <section class="profile-content">
         <!-- Friends Preview -->
         <details class="settings-main-dropdown" style="margin-bottom: 1.5rem;">
@@ -275,13 +411,16 @@ include 'partials/header.php';
                             </div>
                         <?php endforeach; ?>
                     </div>
-                    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                        <a href="friends.php" class="btn btn-secondary">View All Friends</a>
-                    </div>
+                    <?php if ($isOwnProfile): ?>
+                        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <a href="friends.php" class="btn btn-secondary">View All Friends</a>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </details>
 
+        <?php if ($isOwnProfile): ?>
         <details class="settings-main-dropdown">
             <summary class="settings-main-header">
                 <span class="settings-main-title">⚙️ Settings</span>
@@ -443,12 +582,68 @@ include 'partials/header.php';
                         </form>
                     </div>
                 </details>
+
+                <!-- Privacy Settings -->
+                <details class="settings-dropdown">
+                    <summary class="settings-header">
+                        <span class="settings-title">Privacy</span>
+                        <span class="settings-arrow">▼</span>
+                    </summary>
+                    <div class="settings-content" style="padding-top: 1.5rem;">
+                        <form method="POST">
+                            <div class="form-group" style="margin-bottom: 1.25rem;">
+                                <label for="profile_privacy">Profile Visibility</label>
+                                <select 
+                                    id="profile_privacy" 
+                                    name="profile_privacy" 
+                                    style="max-width: 500px; padding: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-dark); color: var(--text-light); border-radius: 4px; font-size: 1rem; width: 100%;"
+                                >
+                                    <option value="public" <?= $profilePrivacy === 'public' ? 'selected' : '' ?>>Public - Anyone can view your profile</option>
+                                    <option value="private" <?= $profilePrivacy === 'private' ? 'selected' : '' ?>>Private - Only show avatar and username</option>
+                                </select>
+                                <small style="display: block; margin-top: 0.5rem; color: var(--text-secondary);">
+                                    <?php if ($profilePrivacy === 'public'): ?>
+                                        Your friends list and activity are visible to everyone.
+                                    <?php else: ?>
+                                        Others will only see your avatar and username.
+                                    <?php endif; ?>
+                                </small>
+                            </div>
+                            <button type="submit" name="update_privacy" class="btn btn-primary">Update Privacy</button>
+                        </form>
+                    </div>
+                </details>
             </div>
         </details>
+        <?php endif; ?>
     </section>
+    <?php endif; ?>
 </main>
 
 <script>
+// Alert auto-dismiss functionality
+function closeAlert(alertId) {
+    const alert = document.getElementById(alertId);
+    if (alert) {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 300);
+    }
+}
+
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const successAlert = document.getElementById('successAlert');
+    const errorAlert = document.getElementById('errorAlert');
+    
+    if (successAlert) {
+        setTimeout(() => closeAlert('successAlert'), 5000);
+    }
+    
+    if (errorAlert) {
+        setTimeout(() => closeAlert('errorAlert'), 5000);
+    }
+});
+
 // Avatar customizer live preview
 document.addEventListener('DOMContentLoaded', function() {
     const emojiOptions = document.querySelectorAll('.emoji-option');

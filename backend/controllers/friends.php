@@ -170,5 +170,37 @@ function searchUsers($query, $currentUserId) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function getFriendshipStatus($userId, $otherUserId) {
+    global $pdo;
+    
+    if ($userId == $otherUserId) {
+        return 'self';
+    }
+    
+    $stmt = $pdo->prepare("
+        SELECT status, user_id, friend_id
+        FROM friends
+        WHERE (user_id = ? AND friend_id = ?)
+           OR (user_id = ? AND friend_id = ?)
+        LIMIT 1
+    ");
+    $stmt->execute([$userId, $otherUserId, $otherUserId, $userId]);
+    $friendship = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$friendship) {
+        return 'none';
+    }
+    
+    if ($friendship['status'] === 'accepted') {
+        return 'friends';
+    }
+    
+    if ($friendship['user_id'] == $userId) {
+        return 'pending_sent';
+    } else {
+        return 'pending_received';
+    }
+}
+
 
 
