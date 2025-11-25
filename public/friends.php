@@ -34,6 +34,9 @@ if (!empty($searchQuery)) {
 
 // Get pending friend requests (incoming)
 $pendingRequests = getPendingFriendRequests($userId);
+// Get sent friend requests (outgoing)
+$sentRequests = getSentFriendRequests($userId);
+
 
 include 'partials/header.php';
 ?>
@@ -107,6 +110,49 @@ include 'partials/header.php';
                 <?php endforeach; ?>
             </div>
         </section>
+        <!-- Sent Friend Requests Section -->
+        <?php if (count($sentRequests) > 0): ?>
+            <section class="friends-section">
+                <h2 class="section-title">Sent Requests (<?= count($sentRequests) ?>)</h2>
+                <p class="section-description">Friend requests you've sent that are awaiting response.</p>
+                <div class="friends-grid">
+                    <?php foreach ($sentRequests as $request): ?>
+                        <?php
+                        $avatarData = null;
+                        if (!empty($request['avatar_url'])) {
+                            $avatarData = json_decode($request['avatar_url'], true);
+                        }
+                        ?>
+                        <div class="friend-card">
+                            <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="friend-avatar-link">
+                                <?php if ($avatarData && isset($avatarData['emoji'])): ?>
+                                    <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
+                                        <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="friend-avatar default-avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                <?php endif; ?>
+                            </a>
+                            <div class="friend-info">
+                                <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="friend-name">
+                                    <?= htmlspecialchars($request['username']) ?>
+                                </a>
+                                <span class="friend-status">Pending</span>
+                            </div>
+                            <div class="friend-actions">
+                                <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="btn btn-secondary btn-sm">View Profile</a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+        <?php endif; ?>
+
     <?php endif; ?>
 
     <!-- Friends List Section -->

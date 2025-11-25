@@ -163,6 +163,13 @@ main.container {
     border-radius: var(--border-radius);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    .section-description {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-top: -0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
  }
 
@@ -1459,6 +1466,16 @@ main.container {
 }
 
 .friend-name:hover {
+    .friend-status {
+        display: inline-block;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        margin-top: 0.3rem;
+    }
+
     color: var(--accent-primary);
 }
 
