@@ -51,10 +51,10 @@ if (session_status() === PHP_SESSION_NONE) session_start();
       <div class="user-auth">
           <?php if (!empty($_SESSION['user_id'])): ?>
             <div class="user-menu">
-              <button id="user-menu-btn" class="user-menu-trigger">
+              <a href="profile.php" id="user-menu-btn" class="user-menu-trigger">
                 <!-- User Icon SVG -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-3-3.87"></path><path d="M4 21v-2a4 4 0 0 1 3-3.87"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              </button>
+              </a>
               <div id="user-menu-dropdown" class="user-menu-dropdown">
                 <div class="dropdown-header">
                   Signed in as <br><strong><?= htmlspecialchars($_SESSION['username'] ?? 'User') ?></strong>
