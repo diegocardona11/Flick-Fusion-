@@ -22,9 +22,9 @@ function addFriend($userId, $friendId) {
 
     // Check if a relationship already exists
     $check = $pdo->prepare("
-        SELECT * FROM friend_requests
-        WHERE (requester_id = :u AND receiver_id = :f)
-           OR (requester_id = :f AND receiver_id = :u)
+        SELECT * FROM friends
+        WHERE (user_id = :u AND friend_id = :f)
+           OR (user_id = :f AND friend_id = :u)
         LIMIT 1
     ");
 
@@ -42,7 +42,7 @@ function addFriend($userId, $friendId) {
 
     // Insert new friend request
     $stmt = $pdo->prepare("
-        INSERT INTO friend_requests (requester_id, receiver_id, status)
+        INSERT INTO friends (user_id, friend_id, status)
         VALUES (:u, :f, 'pending')
     ");
 
@@ -57,14 +57,14 @@ function getPendingFriendRequests($userId) {
 
     $sql = "
         SELECT 
-            fr.id AS request_id,
-            u.user_id AS user_id,   -- <-- changed from u.id
+            f.user_id AS requester_id,
+            u.user_id AS user_id,
             u.username
-        FROM friend_requests fr
-        JOIN users u ON u.user_id = fr.requester_id  -- <-- changed from u.id
-        WHERE fr.receiver_id = :uid
-          AND fr.status = 'pending'
-        ORDER BY fr.created_at DESC
+        FROM friends f
+        JOIN users u ON u.user_id = f.user_id
+        WHERE f.friend_id = :uid
+          AND f.status = 'pending'
+        ORDER BY u.username ASC
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -82,34 +82,41 @@ function removeFriend($userId, $friendId) {
 
 
 // Accept a friend request
-function acceptFriendRequest($requestId) {
+function acceptFriendRequest($requesterId, $receiverId) {
     global $pdo;
 
     $sql = "
-        UPDATE friend_requests
+        UPDATE friends
         SET status = 'accepted'
-        WHERE id = :id
+        WHERE user_id = :requester_id
+          AND friend_id = :receiver_id
           AND status = 'pending'
     ";
 
     $stmt = $pdo->prepare($sql);
-    return $stmt->execute(['id' => $requestId]);
+    return $stmt->execute([
+        'requester_id' => $requesterId,
+        'receiver_id' => $receiverId
+    ]);
 }
 
 
-// Reject a friend request
-function rejectFriendRequest($requestId) {
+// Reject a friend request (delete the pending request)
+function rejectFriendRequest($requesterId, $receiverId) {
     global $pdo;
 
     $sql = "
-        UPDATE friend_requests
-        SET status = 'declined'
-        WHERE id = :id
+        DELETE FROM friends
+        WHERE user_id = :requester_id
+          AND friend_id = :receiver_id
           AND status = 'pending'
     ";
 
     $stmt = $pdo->prepare($sql);
-    return $stmt->execute(['id' => $requestId]);
+    return $stmt->execute([
+        'requester_id' => $requesterId,
+        'receiver_id' => $receiverId
+    ]);
 }
 
 
@@ -119,14 +126,14 @@ function listFriends($userId) {
 
     $sql = "
         SELECT 
-            u.user_id AS id,       -- alias as id for convenience
+            u.user_id AS id,
             u.username
-        FROM friend_requests fr
+        FROM friends f
         JOIN users u ON (
-               (fr.requester_id = :uid AND u.user_id = fr.receiver_id)
-            OR (fr.receiver_id = :uid AND u.user_id = fr.requester_id)
+               (f.user_id = :uid AND u.user_id = f.friend_id)
+            OR (f.friend_id = :uid AND u.user_id = f.user_id)
         )
-        WHERE fr.status = 'accepted'
+        WHERE f.status = 'accepted'
     ";
 
     $stmt = $pdo->prepare($sql);

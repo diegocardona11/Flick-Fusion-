@@ -1,5 +1,4 @@
 <?php
-// Define entry point for backend includes 
 if (!defined('FLICK_FUSION_ENTRY_POINT')) {
     define('FLICK_FUSION_ENTRY_POINT', true);
 }
@@ -11,7 +10,6 @@ if (!defined('FLICK_FUSION_ENTRY_POINT')) {
  *   - View current username, email, and avatar
  */
 
-// Start session first
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -19,7 +17,6 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../backend/controllers/auth.php';
 require_once __DIR__ . '/../backend/config/db.php';
 
-// Ensure user is logged in
 if (empty($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
@@ -29,7 +26,6 @@ $currentUserId = $_SESSION['user_id'];
 $currentUsername = $_SESSION['username'];
 $currentEmail = $_SESSION['email'];
 
-// Available emojis and colors for customization
 $availableEmojis = ['😀', '😎', '🤖', '🦊', '🐼', '🦁', '🐸', '🐙', '🦄', '🐢', '🦉', '🐝', '🦋', '🐬', '🦈', '🐧', '🦩', '🐨', '🦘', '🐯', '🦒', '🦓', '🐘', '🦏', '🐍', '🦎', '🐊', '🦖', '🦕', '🐉'];
 
 $availableColors = [
@@ -47,17 +43,13 @@ $availableColors = [
     ['name' => 'Gold', 'hex' => '#FDD835']
 ];
 
-// Handle form submissions
 $successMessage = '';
 $errorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Handle custom avatar selection
     if (isset($_POST['select_avatar'])) {
         $emoji = $_POST['avatar_emoji'] ?? '';
         $color = $_POST['avatar_color'] ?? '';
-        
-        // Validate emoji and color
         if (in_array($emoji, $availableEmojis) && !empty($color)) {
             $isValidColor = false;
             foreach ($availableColors as $c) {
@@ -68,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if ($isValidColor) {
-                // Store emoji and color as JSON
                 $avatarData = json_encode(['emoji' => $emoji, 'color' => $color]);
                 $stmt = $pdo->prepare("UPDATE users SET avatar_url = ? WHERE user_id = ?");
                 if ($stmt->execute([$avatarData, $currentUserId])) {
@@ -84,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Handle username update
     if (isset($_POST['update_username'])) {
         $newUsername = trim($_POST['new_username']);
         
@@ -112,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Handle email update
     if (isset($_POST['update_email'])) {
         $newEmail = trim($_POST['new_email']);
         $currentPassword = $_POST['current_password_email'] ?? '';
@@ -150,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Handle password update
     if (isset($_POST['update_password'])) {
         $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
@@ -185,12 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get current user data
 $stmt = $pdo->prepare("SELECT avatar_url FROM users WHERE user_id = ?");
 $stmt->execute([$currentUserId]);
 $userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Parse current avatar
 $currentAvatar = null;
 if (!empty($userData['avatar_url'])) {
     $avatarData = json_decode($userData['avatar_url'], true);
@@ -198,6 +184,19 @@ if (!empty($userData['avatar_url'])) {
         $currentAvatar = $avatarData;
     }
 }
+
+$friendsStmt = $pdo->prepare("
+    SELECT u.user_id, u.username, u.avatar_url
+    FROM friends f
+    JOIN users u ON (
+        (f.user_id = ? AND u.user_id = f.friend_id)
+        OR (f.friend_id = ? AND u.user_id = f.user_id)
+    )
+    WHERE f.status = 'accepted'
+    LIMIT 10
+");
+$friendsStmt->execute([$currentUserId, $currentUserId]);
+$friends = $friendsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 include 'partials/header.php';
 ?>
@@ -233,6 +232,56 @@ include 'partials/header.php';
     </section>
 
     <section class="profile-content">
+        <!-- Friends Preview -->
+        <details class="settings-main-dropdown" style="margin-bottom: 1.5rem;">
+            <summary class="settings-main-header">
+                <span class="settings-main-title">👥 Friends (<?= count($friends) ?>)</span>
+                <span class="settings-arrow">▼</span>
+            </summary>
+            <div class="settings-main-content">
+                <?php if (empty($friends)): ?>
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <p>No friends yet. Add friends to see them here!</p>
+                        <a href="friends.php" class="btn btn-primary" style="margin-top: 1rem;">Find Friends</a>
+                    </div>
+                <?php else: ?>
+                    <div class="friends-grid">
+                        <?php foreach ($friends as $friend): 
+                            $friendAvatar = null;
+                            if (!empty($friend['avatar_url'])) {
+                                $friendAvatarData = json_decode($friend['avatar_url'], true);
+                                if ($friendAvatarData && isset($friendAvatarData['emoji']) && isset($friendAvatarData['color'])) {
+                                    $friendAvatar = $friendAvatarData;
+                                }
+                            }
+                        ?>
+                            <div class="friend-preview-card">
+                                <a href="profile.php?user_id=<?= htmlspecialchars($friend['user_id']) ?>" class="friend-avatar-link">
+                                    <?php if ($friendAvatar): ?>
+                                        <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($friendAvatar['color']) ?>;">
+                                            <span class="friend-emoji"><?= $friendAvatar['emoji'] ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="friend-avatar friend-avatar-default">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M4 21v-2a4 4 0 0 1 3-3.87"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span class="friend-name"><?= htmlspecialchars($friend['username']) ?></span>
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <a href="friends.php" class="btn btn-secondary">View All Friends</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </details>
+
         <details class="settings-main-dropdown">
             <summary class="settings-main-header">
                 <span class="settings-main-title">⚙️ Settings</span>

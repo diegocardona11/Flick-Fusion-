@@ -1146,6 +1146,71 @@ main.container {
     flex-wrap: wrap;
 }
 
+/* Friends preview grid */
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.friend-preview-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.friend-avatar-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.friend-avatar-link:hover {
+    transform: translateY(-4px);
+    text-decoration: none;
+}
+
+.friend-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent-primary, #e50914);
+    margin-bottom: 0.5rem;
+    transition: border-width 0.2s ease;
+}
+
+.friend-avatar-link:hover .friend-avatar {
+    border-width: 3px;
+}
+
+.friend-avatar-default {
+    background-color: var(--surface-dark, #1a1a1a);
+    color: var(--text-secondary, #888);
+}
+
+.friend-emoji {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.friend-name {
+    font-size: 0.9rem;
+    color: var(--text-light, #fff);
+    text-align: center;
+    word-break: break-word;
+    max-width: 100px;
+}
+
+.friend-avatar-link:hover .friend-name {
+    color: var(--accent-primary, #e50914);
+}
+
 /* Profile.php responsive styles */
 @media (max-width: 768px) {
     .profile-header {
@@ -1166,6 +1231,11 @@ main.container {
     .color-option {
         width: 50px;
         height: 50px;
+    }
+    
+    .friends-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 1rem;
     }
 }
 
