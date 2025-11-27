@@ -20,7 +20,9 @@ if (empty($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
+$activeTab = $_GET['tab'] ?? 'friends';
 $searchQuery = trim($_GET['search'] ?? '');
+$findQuery = trim($_GET['find'] ?? '');
 
 // Get all friends
 $friends = listFriends($userId);
@@ -30,6 +32,12 @@ if (!empty($searchQuery)) {
     $friends = array_filter($friends, function($friend) use ($searchQuery) {
         return stripos($friend['username'], $searchQuery) !== false;
     });
+}
+
+// Search for users to add as friends
+$searchResults = [];
+if (!empty($findQuery)) {
+    $searchResults = searchUsers($findQuery, $userId);
 }
 
 // Get pending friend requests (incoming)
@@ -47,84 +55,57 @@ include 'partials/header.php';
         <p>Manage your friends and see who's in your network.</p>
     </div>
 
-    <!-- Search Bar -->
-    <div class="friends-search">
-        <form method="get" action="friends.php" class="search-form">
-            <input 
-                type="text" 
-                name="search" 
-                value="<?= htmlspecialchars($searchQuery) ?>" 
-                placeholder="Search friends by username..." 
-                class="form-input"
-            >
-            <button type="submit" class="btn btn-primary">Search</button>
-            <?php if ($searchQuery): ?>
-                <a href="friends.php" class="btn btn-secondary">Clear</a>
-            <?php endif; ?>
-        </form>
+    <!-- Tab Navigation -->
+    <div class="friends-tabs">
+        <a href="?tab=friends" class="tab-link <?= $activeTab === 'friends' ? 'active' : '' ?>">My Friends</a>
+        <a href="?tab=find" class="tab-link <?= $activeTab === 'find' ? 'active' : '' ?>">Find Friends</a>
     </div>
 
-    <!-- Pending Friend Requests Section -->
-    <?php if (count($pendingRequests) > 0): ?>
+    <?php if ($activeTab === 'find'): ?>
+        <!-- Find Friends Section -->
+        <div class="friends-search">
+            <form method="get" action="friends.php" class="search-form">
+                <input type="hidden" name="tab" value="find">
+                <input 
+                    type="text" 
+                    name="find" 
+                    value="<?= htmlspecialchars($findQuery) ?>" 
+                    placeholder="Search for users by username..." 
+                    class="form-input"
+                    autofocus
+                >
+                <button type="submit" class="btn btn-primary">Search</button>
+                <?php if ($findQuery): ?>
+                    <a href="friends.php?tab=find" class="btn btn-secondary">Clear</a>
+                <?php endif; ?>
+            </form>
+        </div>
+
         <section class="friends-section">
-            <h2 class="section-title">Pending Requests (<?= count($pendingRequests) ?>)</h2>
-            <div class="friends-grid">
-                <?php foreach ($pendingRequests as $request): ?>
-                    <?php
-                    $avatarData = null;
-                    if (!empty($request['avatar_url'])) {
-                        $avatarData = json_decode($request['avatar_url'], true);
-                    }
-                    ?>
-                    <div class="friend-card">
-                        <a href="profile.php?user_id=<?= $request['requester_id'] ?>" class="friend-avatar-link">
-                            <?php if ($avatarData && isset($avatarData['emoji'])): ?>
-                                <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
-                                    <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
-                                </div>
-                            <?php else: ?>
-                                <div class="friend-avatar default-avatar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                            <?php endif; ?>
-                        </a>
-                        <div class="friend-info">
-                            <a href="profile.php?user_id=<?= $request['requester_id'] ?>" class="friend-name">
-                                <?= htmlspecialchars($request['username']) ?>
-                            </a>
-                        </div>
-                        <div class="friend-actions">
-                            <form method="post" action="profile.php?user_id=<?= $request['requester_id'] ?>" style="display: inline;">
-                                <input type="hidden" name="requester_id" value="<?= $request['requester_id'] ?>">
-                                <button type="submit" name="accept_friend" class="btn btn-primary btn-sm">Accept</button>
-                            </form>
-                            <form method="post" action="profile.php?user_id=<?= $request['requester_id'] ?>" style="display: inline;">
-                                <input type="hidden" name="requester_id" value="<?= $request['requester_id'] ?>">
-                                <button type="submit" name="reject_friend" class="btn btn-secondary btn-sm">Decline</button>
-                            </form>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-        <!-- Sent Friend Requests Section -->
-        <?php if (count($sentRequests) > 0): ?>
-            <section class="friends-section">
-                <h2 class="section-title">Sent Requests (<?= count($sentRequests) ?>)</h2>
-                <p class="section-description">Friend requests you've sent that are awaiting response.</p>
+            <h2 class="section-title">Search Results</h2>
+            <?php if (count($searchResults) > 0): ?>
                 <div class="friends-grid">
-                    <?php foreach ($sentRequests as $request): ?>
-                        <?php
+                    <?php foreach ($searchResults as $user): 
+                        $friendshipStatus = getFriendshipStatus($userId, $user['id']);
                         $avatarData = null;
-                        if (!empty($request['avatar_url'])) {
-                            $avatarData = json_decode($request['avatar_url'], true);
+                        if (!empty($user['avatar_url'])) {
+                            $avatarData = json_decode($user['avatar_url'], true);
                         }
-                        ?>
+                    ?>
                         <div class="friend-card">
-                            <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="friend-avatar-link">
+                            <a class="card-link" href="profile.php?user_id=<?= $user['id'] ?>">
+                                <div class="friend-actions">
+                                    <div class="status-row">
+                                        <?php if ($friendshipStatus === 'friends'): ?>
+                                            <span class="status-pill pill-friends" aria-label="Accepted friend">Friends</span>
+                                        <?php elseif ($friendshipStatus === 'pending_sent'): ?>
+                                            <span class="status-pill pill-sent" aria-label="Outgoing friend request awaiting response">Request Sent</span>
+                                        <?php elseif ($friendshipStatus === 'pending_received'): ?>
+                                            <span class="status-pill pill-pending" aria-label="Incoming friend request needs response">Needs Response</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="friend-avatar-link">
                                 <?php if ($avatarData && isset($avatarData['emoji'])): ?>
                                     <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
                                         <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
@@ -137,45 +118,99 @@ include 'partials/header.php';
                                         </svg>
                                     </div>
                                 <?php endif; ?>
+                                </div>
+                                <div class="friend-info">
+                                    <span class="friend-name">
+                                        <?= htmlspecialchars($user['username']) ?>
+                                    </span>
+                                </div>
                             </a>
-                            <div class="friend-info">
-                                <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="friend-name">
-                                    <?= htmlspecialchars($request['username']) ?>
-                                </a>
-                                <span class="friend-status">Pending</span>
-                            </div>
                             <div class="friend-actions">
-                                <a href="profile.php?user_id=<?= $request['recipient_id'] ?>" class="btn btn-secondary btn-sm">View Profile</a>
+                                <?php if ($friendshipStatus === 'pending_received'): ?>
+                                    <div class="decision-row">
+                                        <form method="post" action="profile.php?user_id=<?= $user['id'] ?>" style="display:inline;">
+                                            <input type="hidden" name="requester_id" value="<?= $user['id'] ?>">
+                                            <button type="submit" name="accept_friend" class="btn btn-primary btn-sm">Accept</button>
+                                        </form>
+                                        <form method="post" action="profile.php?user_id=<?= $user['id'] ?>" style="display:inline;">
+                                            <input type="hidden" name="requester_id" value="<?= $user['id'] ?>">
+                                            <button type="submit" name="reject_friend" class="btn btn-secondary btn-sm">Decline</button>
+                                        </form>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="decision-row">
+                                        <form method="post" action="profile.php?user_id=<?= $user['id'] ?>" style="display:inline;">
+                                            <button type="submit" name="add_friend" class="btn btn-primary btn-sm">Add Friend</button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-            </section>
-        <?php endif; ?>
+            <?php elseif ($findQuery): ?>
+                <div class="empty-state">
+                    <p>No users found matching "<?= htmlspecialchars($findQuery) ?>".</p>
+                </div>
+            <?php else: ?>
+                <div class="empty-state">
+                    <p>Enter a username to search for friends.</p>
+                </div>
+            <?php endif; ?>
+        </section>
 
-    <?php endif; ?>
+    <?php else: ?>
+        <!-- My Friends Tab (default) -->
+        <!-- Search Bar -->
+        <div class="friends-search">
+            <form method="get" action="friends.php" class="search-form">
+                <input type="hidden" name="tab" value="friends">
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="<?= htmlspecialchars($searchQuery) ?>" 
+                    placeholder="Search my friends by username..." 
+                    class="form-input"
+                >
+                <button type="submit" class="btn btn-primary">Search</button>
+                <?php if ($searchQuery): ?>
+                    <a href="friends.php?tab=friends" class="btn btn-secondary">Clear</a>
+                <?php endif; ?>
+            </form>
+        </div>
 
     <!-- Friends List Section -->
     <section class="friends-section">
         <h2 class="section-title">
             <?php if ($searchQuery): ?>
-                Search Results for "<?= htmlspecialchars($searchQuery) ?>" (<?= count($friends) ?>)
+                Search Results for "<?= htmlspecialchars($searchQuery) ?>" (<?= count($friends) + count($pendingRequests) + count($sentRequests) ?>)
             <?php else: ?>
-                All Friends (<?= count($friends) ?>)
+                All Friends & Requests (<?= count($friends) + count($pendingRequests) + count($sentRequests) ?>)
             <?php endif; ?>
         </h2>
 
-        <?php if (count($friends) > 0): ?>
+        <?php 
+        $hasAny = count($friends) > 0 || count($pendingRequests) > 0 || count($sentRequests) > 0;
+        if ($hasAny): 
+        ?>
+                            <!-- Pending Requests (Need Action) -->
             <div class="friends-grid">
-                <?php foreach ($friends as $friend): ?>
+                <?php foreach ($pendingRequests as $request): ?>
+                                        <?php if ($searchQuery && stripos($request['username'], $searchQuery) === false) continue; ?>
                     <?php
                     $avatarData = null;
-                    if (!empty($friend['avatar_url'])) {
-                        $avatarData = json_decode($friend['avatar_url'], true);
+                    if (!empty($request['avatar_url'])) {
+                        $avatarData = json_decode($request['avatar_url'], true);
                     }
                     ?>
                     <div class="friend-card">
-                        <a href="profile.php?user_id=<?= $friend['user_id'] ?>" class="friend-avatar-link">
+                        <a class="card-link" href="profile.php?user_id=<?= $request['requester_id'] ?>">
+                            <div class="friend-actions">
+                                <div class="status-row">
+                                    <span class="status-pill pill-pending" aria-label="Incoming friend request needs response">Needs Response</span>
+                                </div>
+                            </div>
+                            <div class="friend-avatar-link">
                             <?php if ($avatarData && isset($avatarData['emoji'])): ?>
                                 <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
                                     <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
@@ -188,30 +223,121 @@ include 'partials/header.php';
                                     </svg>
                                 </div>
                             <?php endif; ?>
+                            </div>
+                            <div class="friend-info">
+                                <span class="friend-name">
+                                    <?= htmlspecialchars($request['username']) ?>
+                                </span>
+                            </div>
                         </a>
-                        <div class="friend-info">
-                            <a href="profile.php?user_id=<?= $friend['user_id'] ?>" class="friend-name">
-                                <?= htmlspecialchars($friend['username']) ?>
-                            </a>
-                        </div>
                         <div class="friend-actions">
-                            <a href="profile.php?user_id=<?= $friend['user_id'] ?>" class="btn btn-primary btn-sm">View Profile</a>
+                            <div class="decision-row">
+                                <form method="post" action="profile.php?user_id=<?= $request['requester_id'] ?>" style="display: inline;">
+                                    <input type="hidden" name="requester_id" value="<?= $request['requester_id'] ?>">
+                                    <button type="submit" name="accept_friend" class="btn btn-primary btn-sm">Accept</button>
+                                </form>
+                                <form method="post" action="profile.php?user_id=<?= $request['requester_id'] ?>" style="display: inline;">
+                                    <input type="hidden" name="requester_id" value="<?= $request['requester_id'] ?>">
+                                    <button type="submit" name="reject_friend" class="btn btn-secondary btn-sm">Decline</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
+
+                <!-- Accepted Friends -->
+                <?php foreach ($friends as $friend): ?>
+                    <?php if ($searchQuery && stripos($friend['username'], $searchQuery) === false) continue; ?>
+                    <?php
+                    $avatarData = null;
+                    if (!empty($friend['avatar_url'])) {
+                        $avatarData = json_decode($friend['avatar_url'], true);
+                    }
+                    ?>
+                    <div class="friend-card">
+                        <a class="card-link" href="profile.php?user_id=<?= $friend['id'] ?>">
+                            <div class="friend-actions">
+                                <div class="status-row">
+                                    <span class="status-pill pill-friends" aria-label="Accepted friend">Friends</span>
+                                </div>
+                            </div>
+                            <div class="friend-avatar-link">
+                            <?php if ($avatarData && isset($avatarData['emoji'])): ?>
+                                <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
+                                    <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
+                                </div>
+                            <?php else: ?>
+                                <div class="friend-avatar default-avatar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                            <?php endif; ?>
+                            </div>
+                            <div class="friend-info">
+                                <span class="friend-name">
+                                    <?= htmlspecialchars($friend['username']) ?>
+                                </span>
+                            </div>
+                        </a>
+                        <div class="friend-actions"></div>
+                    </div>
+                <?php endforeach; ?>
+
+                <!-- Sent Requests (Awaiting Response) -->
+                    <?php foreach ($sentRequests as $request): ?>
+                                                <?php if ($searchQuery && stripos($request['username'], $searchQuery) === false) continue; ?>
+                        <?php
+                        $avatarData = null;
+                        if (!empty($request['avatar_url'])) {
+                            $avatarData = json_decode($request['avatar_url'], true);
+                        }
+                        ?>
+                        <div class="friend-card">
+                            <a class="card-link" href="profile.php?user_id=<?= $request['recipient_id'] ?>">
+                                <div class="friend-actions">
+                                    <div class="status-row">
+                                        <span class="status-pill pill-sent" aria-label="Outgoing friend request awaiting response">Request Sent</span>
+                                    </div>
+                                </div>
+                                <div class="friend-avatar-link">
+                                <?php if ($avatarData && isset($avatarData['emoji'])): ?>
+                                    <div class="friend-avatar emoji-avatar" style="background-color: <?= htmlspecialchars($avatarData['color']) ?>;">
+                                        <span class="avatar-emoji"><?= $avatarData['emoji'] ?></span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="friend-avatar default-avatar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </div>
+                                <?php endif; ?>
+                                </div>
+                                <div class="friend-info">
+                                    <span class="friend-name">
+                                        <?= htmlspecialchars($request['username']) ?>
+                                    </span>
+                                </div>
+                            </a>
+                            <div class="friend-actions"></div>
+                        </div>
+                    <?php endforeach; ?>
             </div>
         <?php else: ?>
             <div class="empty-state">
                 <?php if ($searchQuery): ?>
                     <p>No friends found matching "<?= htmlspecialchars($searchQuery) ?>".</p>
-                    <a href="friends.php" class="btn btn-secondary">View All Friends</a>
+                    <a href="friends.php?tab=friends" class="btn btn-secondary">View All Friends</a>
                 <?php else: ?>
                     <p>You haven't added any friends yet.</p>
-                    <p>Find people to connect with!</p>
+                    <a href="friends.php?tab=find" class="btn btn-primary">Find Friends</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
     </section>
+    <?php endif; ?>
 </main>
 
 <?php include 'partials/footer.php'; ?>

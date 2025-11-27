@@ -337,10 +337,13 @@ include 'partials/header.php';
                     <?php elseif ($friendshipStatus === 'pending_sent'): ?>
                         <button class="btn btn-secondary" disabled>Friend Request Sent</button>
                     <?php elseif ($friendshipStatus === 'pending_received'): ?>
-                        <form method="POST" style="display: inline-flex; gap: 0.5rem;">
-                            <button type="submit" name="accept_friend" class="btn btn-primary">Accept Request</button>
-                            <button type="submit" name="reject_friend" class="btn btn-secondary">Reject</button>
-                        </form>
+                        <div class="pending-banner" role="status">
+                            <span><strong>Friend request pending</strong></span>
+                            <form method="POST" class="banner-actions">
+                                <button type="submit" name="accept_friend" class="btn btn-primary">Accept</button>
+                                <button type="submit" name="reject_friend" class="btn btn-secondary">Reject</button>
+                            </form>
+                        </div>
                     <?php elseif ($friendshipStatus === 'friends'): ?>
                         <button class="btn btn-secondary" disabled>✓ Friends</button>
                     <?php endif; ?>
