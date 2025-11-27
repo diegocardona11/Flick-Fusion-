@@ -177,7 +177,8 @@ function searchUsers($query, $currentUserId) {
     $sql = "
         SELECT 
             user_id AS id, 
-            username
+            username,
+            avatar_url
         FROM users
         WHERE user_id != :current_id
           AND username LIKE :q
