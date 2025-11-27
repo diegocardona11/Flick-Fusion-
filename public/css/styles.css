@@ -311,48 +311,7 @@ main.container {
     color: var(--text-light);
     background-color: var(--surface-dark);
  }
- .user-menu-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background-color: var(--surface-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    width: 220px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
- }
- .user-menu-dropdown.is-open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
- }
- .dropdown-header {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.9rem;
-    color: var(--text-secondary);
- }
- .dropdown-header strong {
-    color: var(--text-light);
- }
- .user-menu-dropdown a {
-    display: block;
-    padding: 0.75rem 1rem;
-    color: var(--text-light);
-    text-decoration: none;
- }
- .user-menu-dropdown a:hover {
-    background-color: var(--bg-dark);
-    color: var(--accent-primary);
- }
- .logout-link {
-    border-top: 1px solid var(--border-color);
- }
+
 
  /* ---- 4. Page-Specific Styles ---- */
 
