@@ -1660,3 +1660,36 @@ main.container {
         padding: 1.5rem;
     }
 }
+
+/* ---- Custom Confirm Dialog ---- */
+.custom-confirm {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(26, 26, 29, 0.98);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+}
+
+.confirm-content {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.confirm-content p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
