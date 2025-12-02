@@ -1561,3 +1561,135 @@ main.container {
         min-width: 100%;
     }
 }
+
+/* ---- Modal Styles ---- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--surface-dark);
+    margin: 5% auto;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    animation: slideIn 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    color: var(--text-secondary);
+    position: absolute;
+    right: 1.5rem;
+    top: 1.5rem;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: var(--accent-primary);
+}
+
+#modalTitle {
+    color: var(--text-light);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-right: 2rem;
+}
+
+#modalBody {
+    color: var(--text-light);
+}
+
+#modalBody p {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+    display: flex;
+    gap: 0.5rem;
+}
+
+#modalBody strong {
+    color: var(--accent-secondary);
+    flex-shrink: 0;
+    min-width: 80px;
+}
+
+#modalBody img {
+    display: block;
+    margin: 0 auto 1rem;
+    border-radius: var(--border-radius);
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 1.5rem;
+    }
+}
+
+/* ---- Custom Confirm Dialog ---- */
+.custom-confirm {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(26, 26, 29, 0.98);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+}
+
+.confirm-content {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.confirm-content p {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}

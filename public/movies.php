@@ -17,6 +17,36 @@ require_once __DIR__ . '/../backend/controllers/ratings.php';
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
     header('Content-Type: application/json');
     
+    // Handle fetch movie details
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ajax_details'])) {
+        $imdbId = $_GET['imdb_id'] ?? '';
+        
+        if (empty($imdbId)) {
+            echo json_encode(['success' => false, 'error' => 'Movie ID required']);
+            exit;
+        }
+        
+        $detailed = omdb_fetch_by_id($imdbId);
+        if ($detailed) {
+            echo json_encode([
+                'success' => true,
+                'details' => [
+                    'title' => $detailed['Title'] ?? '',
+                    'year' => $detailed['Year'] ?? '',
+                    'plot' => $detailed['Plot'] ?? 'No plot summary available.',
+                    'director' => $detailed['Director'] ?? 'N/A',
+                    'actors' => $detailed['Actors'] ?? 'N/A',
+                    'genre' => $detailed['Genre'] ?? 'N/A',
+                    'runtime' => $detailed['Runtime'] ?? 'N/A',
+                    'poster' => ($detailed['Poster'] ?? 'N/A') !== 'N/A' ? $detailed['Poster'] : null
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Could not fetch details']);
+        }
+        exit;
+    }
+    
     // Handle movie search
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ajax_search'])) {
         $query = trim($_GET['q'] ?? '');
@@ -32,30 +62,26 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         
         if ($basic_results) {
             foreach ($basic_results as $movie) {
-                $detailed = omdb_fetch_by_id($movie['imdbID']);
-                if ($detailed) {
-                    $inWatchlist = false;
-                    
-                    if ($userId) {
-                        $stmt = $pdo->prepare("
-                            SELECT r.rating_id 
-                            FROM ratings r 
-                            JOIN movies m ON m.movie_id = r.movie_id 
-                            WHERE r.user_id = ? AND m.api_id = ?
-                        ");
-                        $stmt->execute([$userId, $detailed['imdbID']]);
-                        $inWatchlist = $stmt->fetch() !== false;
-                    }
-                    
-                    $detailed_results[] = [
-                        'imdbID' => $detailed['imdbID'],
-                        'title' => $detailed['Title'] ?? '',
-                        'year' => $detailed['Year'] ?? '',
-                        'plot' => $detailed['Plot'] ?? 'No plot summary available.',
-                        'poster' => ($detailed['Poster'] ?? 'N/A') !== 'N/A' ? $detailed['Poster'] : null,
-                        'inWatchlist' => $inWatchlist
-                    ];
+                $inWatchlist = false;
+                
+                if ($userId) {
+                    $stmt = $pdo->prepare("
+                        SELECT r.rating_id 
+                        FROM ratings r 
+                        JOIN movies m ON m.movie_id = r.movie_id 
+                        WHERE r.user_id = ? AND m.api_id = ?
+                    ");
+                    $stmt->execute([$userId, $movie['imdbID']]);
+                    $inWatchlist = $stmt->fetch() !== false;
                 }
+                
+                $detailed_results[] = [
+                    'imdbID' => $movie['imdbID'],
+                    'title' => $movie['Title'] ?? '',
+                    'year' => $movie['Year'] ?? '',
+                    'poster' => ($movie['Poster'] ?? 'N/A') !== 'N/A' ? $movie['Poster'] : null,
+                    'inWatchlist' => $inWatchlist
+                ];
             }
         }
         
@@ -64,6 +90,67 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             'results' => $detailed_results,
             'query' => $query
         ]);
+        exit;
+    }
+    
+    // Handle remove from watchlist
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_remove'])) {
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'You must be logged in.'
+            ]);
+            exit;
+        }
+        
+        $imdbId = $_POST['imdb_id'] ?? null;
+        
+        if (empty($imdbId)) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Movie ID is required.'
+            ]);
+            exit;
+        }
+        
+        try {
+            // Find the local movie ID
+            $stmt = $pdo->prepare("SELECT movie_id, title FROM movies WHERE api_id = ?");
+            $stmt->execute([$imdbId]);
+            $movie = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$movie) {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Movie not found.'
+                ]);
+                exit;
+            }
+            
+            // Remove from ratings table
+            $deleteStmt = $pdo->prepare("DELETE FROM ratings WHERE user_id = ? AND movie_id = ?");
+            $deleted = $deleteStmt->execute([$userId, $movie['movie_id']]);
+            
+            if ($deleted && $deleteStmt->rowCount() > 0) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => "\"" . $movie['title'] . "\" was removed from your watchlist."
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Movie was not in your watchlist.'
+                ]);
+            }
+        } catch (Exception $e) {
+            error_log("Error removing from watchlist: " . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'error' => 'An error occurred while removing the movie.'
+            ]);
+        }
         exit;
     }
     
@@ -257,15 +344,15 @@ include 'partials/header.php';
                                 <img src="<?= htmlspecialchars($m['Poster'] !== 'N/A' ? $m['Poster'] : 'https://placehold.co/100x150/252528/A9A9A9?text=N/A') ?>" alt="Poster for <?= htmlspecialchars($m['Title']) ?>">
                                 <div class="movie-details">
                                     <h3><?= htmlspecialchars($m['Title']) ?> <span>(<?= htmlspecialchars($m['Year']) ?>)</span></h3>
-                                    <p class="plot-summary"><?= htmlspecialchars($m['Plot'] ?? 'No plot summary available.') ?></p>
+                                    <button class="btn btn-secondary btn-sm view-details-btn" data-imdb-id="<?= htmlspecialchars($m['imdbID']) ?>">View Details</button>
                                 </div>
                             </div>
                             
                             <?php if ($userId): // Only show the button if the user is logged in ?>
                                 <div class="movie-actions">
                                     <?php if ($m['inWatchlist']): ?>
-                                        <button class="btn btn-success" disabled>
-                                            In Watchlist
+                                        <button class="btn btn-success remove-from-watchlist-btn" data-imdb-id="<?= htmlspecialchars($m['imdbID']) ?>" data-title="<?= htmlspecialchars($m['Title']) ?>">
+                                            In Watchlist ✓
                                         </button>
                                     <?php else: ?>
                                         <button class="btn btn-primary add-to-watchlist-btn" data-imdb-id="<?= htmlspecialchars($m['imdbID']) ?>" data-title="<?= htmlspecialchars($m['Title']) ?>">
@@ -296,10 +383,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingIndicator = document.getElementById('loadingIndicator');
     const isLoggedIn = <?= json_encode($userId !== null) ?>;
 
-    // Use event delegation for watchlist buttons
+    // Use event delegation for watchlist and details buttons
     document.body.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('add-to-watchlist-btn')) {
             handleAddToWatchlist(e);
+        }
+        if (e.target && e.target.classList.contains('remove-from-watchlist-btn')) {
+            handleRemoveFromWatchlist(e);
+        }
+        if (e.target && e.target.classList.contains('view-details-btn')) {
+            handleViewDetails(e);
         }
     });
 
@@ -363,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="${escapeHtml(posterUrl)}" alt="Poster for ${escapeHtml(movie.title)}">
                         <div class="movie-details">
                             <h3>${escapeHtml(movie.title)} <span>(${escapeHtml(movie.year)})</span></h3>
-                            <p class="plot-summary">${escapeHtml(movie.plot)}</p>
+                            <button class="btn btn-secondary btn-sm view-details-btn" data-imdb-id="${escapeHtml(movie.imdbID)}">View Details</button>
                         </div>
                     </div>
             `;
@@ -372,8 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (movie.inWatchlist) {
                     html += `
                         <div class="movie-actions">
-                            <button class="btn btn-success" disabled>
-                                In Watchlist
+                            <button class="btn btn-success remove-from-watchlist-btn" data-imdb-id="${escapeHtml(movie.imdbID)}" data-title="${escapeHtml(movie.title)}">
+                                In Watchlist ✓
                             </button>
                         </div>
                     `;
@@ -449,8 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 console.log('Success! Updating button...');
                 
-                // Show success message
-                showFlashMessage(data.message, 'success');
+                // Show success message near the movie card
+                showFlashMessage(data.message, 'success', button);
                 
                 // Change to success state
                 button.classList.remove('btn-primary');
@@ -467,8 +560,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.log('Error response:', data.error);
                 
-                // Show error message
-                showFlashMessage(data.error || 'Could not add movie to watchlist.', 'error');
+                // Show error message near the movie card
+                showFlashMessage(data.error || 'Could not add movie to watchlist.', 'error', button);
                 
                 // If already in watchlist, show that state
                 if (data.already_added) {
@@ -489,7 +582,128 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showFlashMessage(message, type) {
+    async function handleRemoveFromWatchlist(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const button = e.target;
+        const imdbId = button.getAttribute('data-imdb-id');
+        const movieTitle = button.getAttribute('data-title');
+
+        if (!imdbId) {
+            console.error('No IMDB ID found on button');
+            return;
+        }
+
+        // Confirm removal
+        const movieCard = button.closest('.movie-result-item');
+        if (movieCard) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.className = 'custom-confirm';
+            confirmDiv.innerHTML = `
+                <div class="confirm-content">
+                    <p>Remove "${escapeHtml(movieTitle)}" from your watchlist?</p>
+                    <div class="confirm-actions">
+                        <button class="btn btn-danger btn-sm confirm-yes">Remove</button>
+                        <button class="btn btn-secondary btn-sm confirm-no">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            movieCard.style.position = 'relative';
+            movieCard.appendChild(confirmDiv);
+            
+            // Handle confirmation
+            confirmDiv.querySelector('.confirm-yes').addEventListener('click', () => {
+                confirmDiv.remove();
+                performRemoval(button, imdbId, movieTitle);
+            });
+            
+            confirmDiv.querySelector('.confirm-no').addEventListener('click', () => {
+                confirmDiv.remove();
+            });
+            
+            return;
+        }
+        
+        // Fallback to native confirm if card not found
+        if (!confirm(`Remove "${movieTitle}" from your watchlist?`)) {
+            return;
+        }
+        
+        performRemoval(button, imdbId, movieTitle);
+    }
+    
+    async function performRemoval(button, imdbId, movieTitle) {
+
+        console.log('Removing from watchlist:', imdbId, movieTitle);
+
+        // Disable button and change text
+        button.disabled = true;
+        button.style.transition = 'all 0.3s ease';
+        button.textContent = 'Removing...';
+
+        try {
+            const formData = new FormData();
+            formData.append('ajax_remove', '1');
+            formData.append('imdb_id', imdbId);
+            
+            const response = await fetch('movies.php', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const text = await response.text();
+            console.log('Raw response:', text);
+            
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                console.error('Response was:', text);
+                throw new Error('Invalid JSON response from server');
+            }
+            
+            console.log('Parsed data:', data);
+
+            if (data.success) {
+                console.log('Success! Updating button...');
+                
+                // Show success message
+                showFlashMessage(data.message, 'success', button);
+                
+                // Change back to "Add to Watchlist" state
+                button.disabled = false;
+                button.classList.remove('btn-success', 'remove-from-watchlist-btn');
+                button.classList.add('btn-primary', 'add-to-watchlist-btn');
+                button.textContent = 'Add to Watchlist';
+            } else {
+                console.log('Error response:', data.error);
+                
+                // Show error message
+                showFlashMessage(data.error || 'Could not remove movie from watchlist.', 'error', button);
+                
+                // Re-enable button
+                button.disabled = false;
+                button.textContent = 'In Watchlist ✓';
+            }
+        } catch (error) {
+            console.error('Error removing from watchlist:', error);
+            showFlashMessage('An error occurred. Please try again.', 'error');
+            button.disabled = false;
+            button.textContent = 'In Watchlist ✓';
+        }
+    }
+
+    function showFlashMessage(message, type, button) {
         // Remove any existing flash messages
         const existingFlash = document.querySelector('.flash-message-ajax');
         if (existingFlash) {
@@ -499,6 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create new flash message
         const flashDiv = document.createElement('div');
         flashDiv.className = `flash-message flash-message-ajax alert alert-${type === 'success' ? 'success' : 'error'}`;
+        flashDiv.style.cssText = 'position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; min-width: 300px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5);';
         flashDiv.innerHTML = `
             <span>${escapeHtml(message)}</span>
             <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Close">
@@ -509,19 +724,110 @@ document.addEventListener('DOMContentLoaded', function() {
             </button>
         `;
 
-        // Simply prepend to container - most reliable method
-        const container = document.querySelector('.container');
-        if (container) {
-            container.insertBefore(flashDiv, container.firstChild);
-        }
+        // Append to body for centered positioning
+        document.body.appendChild(flashDiv);
 
-        // Auto-dismiss after 5 seconds
+        // Auto-dismiss after 3 seconds
         setTimeout(() => {
             if (flashDiv.parentElement) {
                 flashDiv.style.opacity = '0';
                 setTimeout(() => flashDiv.remove(), 300);
             }
-        }, 5000);
+        }, 3000);
+    }
+
+    async function handleViewDetails(e) {
+        e.preventDefault();
+        const button = e.target;
+        const imdbId = button.getAttribute('data-imdb-id');
+        
+        if (!imdbId) return;
+        
+        // Show modal with loading state
+        showModal('Loading...', '<p>Fetching movie details...</p>', null, null);
+        
+        try {
+            const response = await fetch(`movies.php?ajax_details=1&imdb_id=${encodeURIComponent(imdbId)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+            
+            if (data.success && data.details) {
+                const d = data.details;
+                const posterImg = d.poster ? `<img src="${escapeHtml(d.poster)}" alt="Poster" style="max-width: 200px; margin-bottom: 1rem;">` : '';
+                const content = `
+                    ${posterImg}
+                    <p><strong>Year:</strong> ${escapeHtml(d.year)}</p>
+                    <p><strong>Genre:</strong> ${escapeHtml(d.genre)}</p>
+                    <p><strong>Director:</strong> ${escapeHtml(d.director)}</p>
+                    <p><strong>Actors:</strong> ${escapeHtml(d.actors)}</p>
+                    <p><strong>Runtime:</strong> ${escapeHtml(d.runtime)}</p>
+                    <p><strong>Plot:</strong> ${escapeHtml(d.plot)}</p>
+                `;
+                
+                // Check if movie is already in watchlist from the original button
+                const movieCard = button.closest('.movie-result-item');
+                const watchlistBtn = movieCard ? movieCard.querySelector('.add-to-watchlist-btn, .btn-success[disabled]') : null;
+                const inWatchlist = watchlistBtn && (watchlistBtn.disabled || watchlistBtn.textContent.includes('In Watchlist'));
+                
+                showModal(d.title, content, imdbId, inWatchlist);
+            } else {
+                showModal('Error', '<p>Could not load movie details.</p>', null, null);
+            }
+        } catch (error) {
+            console.error('Error fetching details:', error);
+            showModal('Error', '<p>Failed to fetch movie details.</p>', null, null);
+        }
+    }
+    
+    function showModal(title, content, imdbId, inWatchlist) {
+        // Remove existing modal if any
+        let modal = document.getElementById('movieDetailsModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'movieDetailsModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="modal-close">&times;</span>
+                    <h2 id="modalTitle"></h2>
+                    <div id="modalBody"></div>
+                    <div id="modalActions" style="margin-top: 1.5rem; text-align: center;"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close handler
+            modal.querySelector('.modal-close').addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Click outside to close
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = content;
+        
+        // Add watchlist button if user is logged in and imdbId is provided
+        const modalActions = document.getElementById('modalActions');
+        if (isLoggedIn && imdbId) {
+            if (inWatchlist) {
+                modalActions.innerHTML = '<button class="btn btn-success" disabled>In Watchlist</button>';
+            } else {
+                modalActions.innerHTML = `<button class="btn btn-primary add-to-watchlist-btn" data-imdb-id="${escapeHtml(imdbId)}" data-title="${escapeHtml(title)}">Add to Watchlist</button>`;
+            }
+        } else {
+            modalActions.innerHTML = '';
+        }
+        
+        modal.style.display = 'block';
     }
 
     function escapeHtml(text) {
