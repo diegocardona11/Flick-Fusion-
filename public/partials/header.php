@@ -32,9 +32,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
               <a href="movies.php">Movies</a>
               <a href="mylist.php">My List</a>
               <a href="friends.php">Friends</a>
-          <?php else: ?>
-              <a href="index.php">Explore</a>
-              <a href="movies.php">Search</a>
           <?php endif; ?>
     </nav>
 
