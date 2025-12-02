@@ -17,6 +17,36 @@ require_once __DIR__ . '/../backend/controllers/ratings.php';
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
     header('Content-Type: application/json');
     
+    // Handle fetch movie details
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ajax_details'])) {
+        $imdbId = $_GET['imdb_id'] ?? '';
+        
+        if (empty($imdbId)) {
+            echo json_encode(['success' => false, 'error' => 'Movie ID required']);
+            exit;
+        }
+        
+        $detailed = omdb_fetch_by_id($imdbId);
+        if ($detailed) {
+            echo json_encode([
+                'success' => true,
+                'details' => [
+                    'title' => $detailed['Title'] ?? '',
+                    'year' => $detailed['Year'] ?? '',
+                    'plot' => $detailed['Plot'] ?? 'No plot summary available.',
+                    'director' => $detailed['Director'] ?? 'N/A',
+                    'actors' => $detailed['Actors'] ?? 'N/A',
+                    'genre' => $detailed['Genre'] ?? 'N/A',
+                    'runtime' => $detailed['Runtime'] ?? 'N/A',
+                    'poster' => ($detailed['Poster'] ?? 'N/A') !== 'N/A' ? $detailed['Poster'] : null
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Could not fetch details']);
+        }
+        exit;
+    }
+    
     // Handle movie search
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['ajax_search'])) {
         $query = trim($_GET['q'] ?? '');
@@ -32,30 +62,26 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         
         if ($basic_results) {
             foreach ($basic_results as $movie) {
-                $detailed = omdb_fetch_by_id($movie['imdbID']);
-                if ($detailed) {
-                    $inWatchlist = false;
-                    
-                    if ($userId) {
-                        $stmt = $pdo->prepare("
-                            SELECT r.rating_id 
-                            FROM ratings r 
-                            JOIN movies m ON m.movie_id = r.movie_id 
-                            WHERE r.user_id = ? AND m.api_id = ?
-                        ");
-                        $stmt->execute([$userId, $detailed['imdbID']]);
-                        $inWatchlist = $stmt->fetch() !== false;
-                    }
-                    
-                    $detailed_results[] = [
-                        'imdbID' => $detailed['imdbID'],
-                        'title' => $detailed['Title'] ?? '',
-                        'year' => $detailed['Year'] ?? '',
-                        'plot' => $detailed['Plot'] ?? 'No plot summary available.',
-                        'poster' => ($detailed['Poster'] ?? 'N/A') !== 'N/A' ? $detailed['Poster'] : null,
-                        'inWatchlist' => $inWatchlist
-                    ];
+                $inWatchlist = false;
+                
+                if ($userId) {
+                    $stmt = $pdo->prepare("
+                        SELECT r.rating_id 
+                        FROM ratings r 
+                        JOIN movies m ON m.movie_id = r.movie_id 
+                        WHERE r.user_id = ? AND m.api_id = ?
+                    ");
+                    $stmt->execute([$userId, $movie['imdbID']]);
+                    $inWatchlist = $stmt->fetch() !== false;
                 }
+                
+                $detailed_results[] = [
+                    'imdbID' => $movie['imdbID'],
+                    'title' => $movie['Title'] ?? '',
+                    'year' => $movie['Year'] ?? '',
+                    'poster' => ($movie['Poster'] ?? 'N/A') !== 'N/A' ? $movie['Poster'] : null,
+                    'inWatchlist' => $inWatchlist
+                ];
             }
         }
         
@@ -257,7 +283,7 @@ include 'partials/header.php';
                                 <img src="<?= htmlspecialchars($m['Poster'] !== 'N/A' ? $m['Poster'] : 'https://placehold.co/100x150/252528/A9A9A9?text=N/A') ?>" alt="Poster for <?= htmlspecialchars($m['Title']) ?>">
                                 <div class="movie-details">
                                     <h3><?= htmlspecialchars($m['Title']) ?> <span>(<?= htmlspecialchars($m['Year']) ?>)</span></h3>
-                                    <p class="plot-summary"><?= htmlspecialchars($m['Plot'] ?? 'No plot summary available.') ?></p>
+                                    <button class="btn btn-secondary btn-sm view-details-btn" data-imdb-id="<?= htmlspecialchars($m['imdbID']) ?>">View Details</button>
                                 </div>
                             </div>
                             
@@ -296,10 +322,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingIndicator = document.getElementById('loadingIndicator');
     const isLoggedIn = <?= json_encode($userId !== null) ?>;
 
-    // Use event delegation for watchlist buttons
+    // Use event delegation for watchlist and details buttons
     document.body.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('add-to-watchlist-btn')) {
             handleAddToWatchlist(e);
+        }
+        if (e.target && e.target.classList.contains('view-details-btn')) {
+            handleViewDetails(e);
         }
     });
 
@@ -363,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="${escapeHtml(posterUrl)}" alt="Poster for ${escapeHtml(movie.title)}">
                         <div class="movie-details">
                             <h3>${escapeHtml(movie.title)} <span>(${escapeHtml(movie.year)})</span></h3>
-                            <p class="plot-summary">${escapeHtml(movie.plot)}</p>
+                            <button class="btn btn-secondary btn-sm view-details-btn" data-imdb-id="${escapeHtml(movie.imdbID)}">View Details</button>
                         </div>
                     </div>
             `;
@@ -522,6 +551,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => flashDiv.remove(), 300);
             }
         }, 5000);
+    }
+
+    async function handleViewDetails(e) {
+        e.preventDefault();
+        const button = e.target;
+        const imdbId = button.getAttribute('data-imdb-id');
+        
+        if (!imdbId) return;
+        
+        // Show modal with loading state
+        showModal('Loading...', '<p>Fetching movie details...</p>');
+        
+        try {
+            const response = await fetch(`movies.php?ajax_details=1&imdb_id=${encodeURIComponent(imdbId)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+            
+            if (data.success && data.details) {
+                const d = data.details;
+                const posterImg = d.poster ? `<img src="${escapeHtml(d.poster)}" alt="Poster" style="max-width: 200px; margin-bottom: 1rem;">` : '';
+                const content = `
+                    ${posterImg}
+                    <p><strong>Year:</strong> ${escapeHtml(d.year)}</p>
+                    <p><strong>Genre:</strong> ${escapeHtml(d.genre)}</p>
+                    <p><strong>Director:</strong> ${escapeHtml(d.director)}</p>
+                    <p><strong>Actors:</strong> ${escapeHtml(d.actors)}</p>
+                    <p><strong>Runtime:</strong> ${escapeHtml(d.runtime)}</p>
+                    <p><strong>Plot:</strong> ${escapeHtml(d.plot)}</p>
+                `;
+                showModal(d.title, content);
+            } else {
+                showModal('Error', '<p>Could not load movie details.</p>');
+            }
+        } catch (error) {
+            console.error('Error fetching details:', error);
+            showModal('Error', '<p>Failed to fetch movie details.</p>');
+        }
+    }
+    
+    function showModal(title, content) {
+        // Remove existing modal if any
+        let modal = document.getElementById('movieDetailsModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'movieDetailsModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="modal-close">&times;</span>
+                    <h2 id="modalTitle"></h2>
+                    <div id="modalBody"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Close handler
+            modal.querySelector('.modal-close').addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Click outside to close
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = content;
+        modal.style.display = 'block';
     }
 
     function escapeHtml(text) {
