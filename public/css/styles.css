@@ -181,10 +181,6 @@ main.container {
 
 /* Auth (login/register) */
 .auth-container { display:flex; align-items:center; justify-content:center; min-height: calc(100vh - 140px); }
-.auth-hero { background: var(--surface-dark); border-bottom: 1px solid var(--border-color); }
-.auth-hero-inner { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; text-align: center; }
-.auth-hero-title { font-family: var(--font-heading); font-size: 2rem; margin: 0; color: var(--accent-primary); }
-.auth-hero-subtitle { color: var(--text-secondary); margin: 0.5rem 0 0; }
 .auth-card { width: 100%; max-width: 600px; background: var(--surface-dark); border:1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: 0 8px 24px rgba(0,0,0,0.35); overflow:hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .auth-card:hover { transform: none; box-shadow: 0 8px 24px rgba(0,0,0,0.35); border-color: var(--border-color); }
 .auth-header { padding: 1.25rem 1.5rem 0.75rem; text-align:center; }
@@ -762,13 +758,6 @@ main.container {
 .rating-max {
     color: var(--text-secondary);
     font-size: 0.85rem;
-    flex-shrink: 0;
-}
-
-.btn-sm {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
-    white-space: nowrap;
     flex-shrink: 0;
 }
 
@@ -1352,15 +1341,6 @@ main.container {
     justify-content: center;
     border: 2px solid var(--accent-primary, #e50914);
     margin-bottom: 0.5rem;
-.friend-card { 
-    display:grid; 
-    grid-template-rows: auto auto auto; 
-    align-items:start; 
-    justify-items:center; 
-    gap:0.75rem; 
-    min-height:240px; 
-    padding:1.25rem 1rem; 
-}
 }
 
 .friend-avatar-link:hover .friend-avatar {
