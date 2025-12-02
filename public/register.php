@@ -96,107 +96,127 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include 'partials/header.php'; ?>
 
-    <div class="container">
-        <h2>Register</h2>
-
-        <!-- Display errors if any exist -->
-        <?php if (!empty($errors)): ?>
-            <div class="error-box">
-                <strong>Please fix the following errors:</strong>
-                <ul>
-                    <?php foreach ($errors as $error): ?>
-                        <li><?php echo htmlspecialchars($error); ?></li>
-                    <?php endforeach; ?>
-                </ul>
+    <div class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon" aria-hidden="true">FlickFusion</div>
+                <h2 class="auth-title">Create your account</h2>
+                <p class="auth-subtitle">Join with a username and email</p>
+                <div class="auth-light-separator" aria-hidden="true"></div>
             </div>
-        <?php endif; ?>
 
-        <!-- Display success message if registration succeeded but auto-login failed -->
-        <?php if ($success && !empty($errors)): ?>
-            <div class="success-box">
-                <strong>Account successfully created!</strong> Please <a href="login.php">log in</a>.
-            </div>
-        <?php endif; ?>
+            <!-- Display errors if any exist -->
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-error auth-alert">
+                    <strong>Registration failed</strong>
+                    <ul>
+                        <?php foreach ($errors as $error): ?>
+                            <li><?php echo htmlspecialchars($error); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <button type="button" class="alert-close" aria-label="Close" onclick="this.closest('.alert').remove()">✕</button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Display success message if registration succeeded but auto-login failed -->
+            <?php if ($success && !empty($errors)): ?>
+                <div class="alert alert-success auth-alert">
+                    <strong>Account successfully created!</strong> Please <a href="login.php">log in</a>.
+                    <button type="button" class="alert-close" aria-label="Close" onclick="this.closest('.alert').remove()">✕</button>
+                </div>
+            <?php endif; ?>
+
+            <!-- Registration Form -->
+            <form method="POST" action="register.php" class="auth-form" novalidate>
+                <div class="form-field">
+                    <label for="username">Username</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        value="<?php echo htmlspecialchars($username); ?>" 
+                        required
+                        placeholder="Choose a username"
+                        autofocus
+                    >
+                    <small class="field-hint">4–20 characters, letters, numbers, underscore</small>
+                </div>
+
+                <div class="form-field">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        value="<?php echo htmlspecialchars($email); ?>" 
+                        required
+                        placeholder="you@example.com"
+                    >
+                </div>
+
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label for="password">Password</label>
+                        <button type="button" class="link-button" id="toggleRegPassBtn">Show</button>
+                    </div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required
+                        placeholder="••••••••"
+                    >
+                    <small class="field-hint">Minimum 8 characters, include letters and numbers</small>
+                </div>
+
+                <div class="form-field">
+                    <div class="field-label-row">
+                        <label for="confirm_password">Confirm Password</label>
+                        <button type="button" class="link-button" id="toggleRegConfirmBtn">Show</button>
+                    </div>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        required
+                        placeholder="••••••••"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+
+                <div class="auth-divider"><span>or</span></div>
+                <div class="auth-actions-row">
+                    <a class="btn btn-secondary btn-block" href="login.php">Sign in instead</a>
+                </div>
+            </form>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleRegPassBtn = document.getElementById('toggleRegPassBtn');
+                const regPassInput = document.getElementById('password');
+                const toggleRegConfirmBtn = document.getElementById('toggleRegConfirmBtn');
+                const regConfirmInput = document.getElementById('confirm_password');
+
+                if (toggleRegPassBtn && regPassInput) {
+                    toggleRegPassBtn.addEventListener('click', function() {
+                        const isText = regPassInput.type === 'text';
+                        regPassInput.type = isText ? 'password' : 'text';
+                        toggleRegPassBtn.textContent = isText ? 'Show' : 'Hide';
+                    });
+                }
+
+                if (toggleRegConfirmBtn && regConfirmInput) {
+                    toggleRegConfirmBtn.addEventListener('click', function() {
+                        const isText = regConfirmInput.type === 'text';
+                        regConfirmInput.type = isText ? 'password' : 'text';
+                        toggleRegConfirmBtn.textContent = isText ? 'Show' : 'Hide';
+                    });
+                }
+            });
+            </script>
+
+        </div>
     </div>
-
-    <!-- Registration Form -->
-    <form method="POST" action="register.php" class="form-box">
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input 
-                type="text" 
-                id="username" 
-                name="username" 
-                value="<?php echo htmlspecialchars($username); ?>" 
-                required
-                placeholder="Enter username (3-20 characters)"
-            >
-        </div>
-        
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                value="<?php echo htmlspecialchars($email); ?>" 
-                required
-                placeholder="Enter a valid email address"
-            >
-        </div>
-
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                required
-                placeholder="At least 8 characters, including letters and numbers"
-            >
-        </div>
-
-           <div style="margin-bottom: 18px;">
-               <input type="checkbox" id="showPasswordReg" onclick="togglePassword('password', 'showPasswordReg')">
-               <label for="showPasswordReg" style="font-size: 14px; cursor:pointer;">Show Password</label>
-           </div>
-
-        <div class="form-group">
-            <label for="confirm_password">Confirm Password</label>
-            <input 
-                type="password" 
-                id="confirm_password" 
-                name="confirm_password" 
-                required
-                placeholder="Re-enter your password"
-            >
-        </div>
-
-           <div style="margin-bottom: 18px;">
-               <input type="checkbox" id="showConfirmPasswordReg" onclick="togglePassword('confirm_password', 'showConfirmPasswordReg')">
-               <label for="showConfirmPasswordReg" style="font-size: 14px; cursor:pointer;">Show Confirm Password</label>
-           </div>
-
-        <button type="submit" class="btn">Create Account</button>
-    </form>
-
-    <script>
-    function togglePassword(inputId, checkboxId) {
-        var input = document.getElementById(inputId);
-        var checkbox = document.getElementById(checkboxId);
-        if (input && checkbox) {
-            input.type = checkbox.checked ? 'text' : 'password';
-        }
-    }
-    </script>
-
-    <!-- Link to login page for existing users -->
-     <div class="login-link">
-        Already have an account? <a href="login.php">Log in here</a>.
-     </div>
-    </div>
-</body>
 
 <?php include 'partials/footer.php'; ?>
-
-</html>

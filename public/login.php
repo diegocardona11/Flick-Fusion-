@@ -64,24 +64,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include 'partials/header.php'; ?>
 
-    <div class="container">
-        <h2>Login</h2>
+    <div class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon" aria-hidden="true">FlickFusion</div>
+                <h2 class="auth-title">Welcome back</h2>
+                <p class="auth-subtitle">Use your username or email</p>
+                <div class="auth-light-separator" aria-hidden="true"></div>
+            </div>
 
         <!-- Display errors if any exist -->
         <?php if (!empty($errors)): ?>
-            <div class="error-box">
-                <strong>Login failed:</strong>
+            <div class="alert alert-error auth-alert">
+                <strong>Login failed</strong>
                 <ul>
                     <?php foreach ($errors as $error): ?>
                         <li><?php echo htmlspecialchars($error); ?></li>
                     <?php endforeach; ?>
                 </ul>
+                <button type="button" class="alert-close" aria-label="Close" onclick="this.closest('.alert').remove()">✕</button>
             </div>
         <?php endif; ?>
 
         <!-- Login Form -->
-        <form method="POST" action="login.php" class="form-box">
-            <div class="form-group">
+        <form method="POST" action="login.php" class="auth-form" novalidate>
+            <div class="form-field">
                 <label for="identifier">Username or Email</label>
                 <input 
                     type="text" 
@@ -89,43 +96,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     name="identifier" 
                     value="<?php echo htmlspecialchars($identifier); ?>" 
                     required
-                    placeholder="Enter your username or email"
+                    placeholder="you@example.com"
                     autofocus
                 >
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
+            <div class="form-field">
+                <div class="field-label-row">
+                    <label for="password">Password</label>
+                    <button type="button" class="link-button" id="togglePassBtn">Show</button>
+                </div>
                 <input 
                     type="password" 
                     id="password" 
                     name="password" 
                     required
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                 >
+                <small class="field-hint">Minimum 8 characters</small>
             </div>
 
-               <div style="margin-bottom: 18px;">
-                   <input type="checkbox" id="showPassword" onclick="togglePassword('password', 'showPassword')">
-                   <label for="showPassword" style="font-size: 14px; cursor:pointer;">Show Password</label>
-               </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
 
-            <button type="submit" class="btn">Login</button>
+            <div class="auth-divider"><span>or</span></div>
+            <div class="auth-actions-row">
+                <a class="btn btn-secondary btn-block" href="register.php">Create an account</a>
+            </div>
         </form>
 
     <script>
-    function togglePassword(inputId, checkboxId) {
-        var input = document.getElementById(inputId);
-        var checkbox = document.getElementById(checkboxId);
-        if (input && checkbox) {
-            input.type = checkbox.checked ? 'text' : 'password';
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('togglePassBtn');
+        const passInput = document.getElementById('password');
+        if (toggleBtn && passInput) {
+            toggleBtn.addEventListener('click', function() {
+                const isText = passInput.type === 'text';
+                passInput.type = isText ? 'password' : 'text';
+                toggleBtn.textContent = isText ? 'Show' : 'Hide';
+            });
         }
-    }
+    });
     </script>
 
-        <!-- Link to registration page for new users -->
-        <div class="login-link">
-            Don't have an account? <a href="register.php">Register here</a>.
+        
         </div>
     </div>
 
