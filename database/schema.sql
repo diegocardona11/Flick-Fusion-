@@ -11,6 +11,7 @@ CREATE TABLE if NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,            -- unique emails
     password_hash VARCHAR(255) NOT NULL,            -- hashed passwords
     avatar_url TEXT,                                -- stores JSON with emoji/color or NULL for default
+    profile_privacy ENUM('public', 'private') DEFAULT 'public',  -- profile visibility setting
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
