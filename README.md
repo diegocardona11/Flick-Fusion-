@@ -34,7 +34,8 @@ You need a local server environment (like XAMPP) and Git.
    git clone https://github.com/diegocardona11/Flick-Fusion-.git
 3. **Setup the Database**
     - Open `http://localhost/phpmyadmin`
-    - Create a new database named `flick_fusion`
+    - Create a new database named `flick_fusion` (or choose your own name)
+    - **Note:** If you use a different database name, make sure to update `DB_NAME` in step 5 to match.
 4. **Choose your Data Option (Important)**
     - **Option A: Fresh install.** Import `database/schema.sql`. This creates an empty database ready for new users. 
     - **Option B: Demo Mode (Recommended for Testing).** Import `database/example_data.sql`.
@@ -42,6 +43,8 @@ You need a local server environment (like XAMPP) and Git.
         > <br /> **Demo Login:**
         > * Username: `DemoUser`
         > * Password: `password123`
+        > 
+        > **Important:** When importing `example_data.sql`, make sure to **deselect "Enable foreign key checks"** in phpMyAdmin's import options to avoid constraint errors.
 5. **Configure Envrionment.** Create a `.env` file in the root directory and enter your API key:
     ```sh
     OMDB_API_KEY='YOUR_KEY_HERE';
