@@ -20,16 +20,16 @@ ALTER TABLE movies AUTO_INCREMENT = 1;
 -- INSERT 10 DEMO USERS
 -- Password for all users: 'password123' (hashed)
 INSERT INTO users (user_id, username, email, password_hash, avatar_url, created_at) VALUES
-(1, 'DemoUser', 'demo@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"🍿", "bg":"#FF5733"}', NOW()),
-(2, 'MovieBuff99', 'buff@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"🎬", "bg":"#33FF57"}', NOW()),
-(3, 'CinemaQueen', 'queen@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"👑", "bg":"#3357FF"}', NOW()),
-(4, 'ActionHero', 'action@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"💥", "bg":"#000000"}', NOW()),
-(5, 'SciFiFan2025', 'scifi@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"👽", "bg":"#7D3C98"}', NOW()),
-(6, 'DramaLlama', 'drama@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"🎭", "bg":"#F1C40F"}', NOW()),
-(7, 'AnimeLover', 'anime@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"🍜", "bg":"#E74C3C"}', NOW()),
-(8, 'RetroViewer', 'retro@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"📼", "bg":"#95A5A6"}', NOW()),
-(9, 'IndieSnob', 'indie@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"☕", "bg":"#6F4E37"}', NOW()),
-(10, 'FamilyFilms', 'family@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"type":"emoji", "value":"👨‍👩‍👧‍👦", "bg":"#27AE60"}', NOW());
+(1, 'DemoUser', 'demo@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"😀", "color":"#FF6B6B"}', NOW()),
+(2, 'MovieBuff99', 'buff@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"😎", "color":"#4ECDC4"}', NOW()),
+(3, 'CinemaQueen', 'queen@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🦋", "color":"#45B7D1"}', NOW()),
+(4, 'ActionHero', 'action@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🦁", "color":"#FFA07A"}', NOW()),
+(5, 'SciFiFan2025', 'scifi@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🤖", "color":"#98D8C8"}', NOW()),
+(6, 'DramaLlama', 'drama@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🐼", "color":"#F7DC6F"}', NOW()),
+(7, 'AnimeLover', 'anime@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🦊", "color":"#82E0AA"}', NOW()),
+(8, 'RetroViewer', 'retro@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🐢", "color":"#FF6B6B"}', NOW()),
+(9, 'IndieSnob', 'indie@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🦉", "color":"#4ECDC4"}', NOW()),
+(10, 'FamilyFilms', 'family@example.com', '$2y$10$xUENVHo5y43BZeOovwaVGuwkNAtgBFhG2s9XJD442sxRoZbkYM8xi', '{"emoji":"🐧", "color":"#F7DC6F"}', NOW());
 
 
 -- INSERT 15 MOVIES

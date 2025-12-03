@@ -36,7 +36,7 @@ if (!$isOwnProfile) {
             user_id, 
             username, 
             email, 
-            -- avatar_url,   -- commented out (column doesn't exist)
+            avatar_url,   -- commented out (column doesn't exist)
             profile_privacy
         FROM users
         WHERE user_id = ?
