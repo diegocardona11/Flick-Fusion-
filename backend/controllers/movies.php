@@ -76,6 +76,7 @@ function getMoviesForUser(PDO $pdo, int $userId): array {
     $sql = "
         SELECT
             r.movie_id,
+            m.api_id,
             m.title,
             m.year,
             m.poster_url,
@@ -145,6 +146,7 @@ function getComparison(PDO $pdo, int $userID, int $friendID): array {
             // Both users have this movie → put it in shared
             $shared[] = [
                 'movie_id'      => $movieId,
+                'api_id'        => $movie['api_id'] ?? null,
                 'title'         => $movie['title'],
                 'year'          => $movie['year'],
                 'poster_url'    => $movie['poster_url'],

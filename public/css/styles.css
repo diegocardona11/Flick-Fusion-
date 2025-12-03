@@ -1711,3 +1711,48 @@ main.container {
     gap: 1rem;
     justify-content: center;
 }
+
+/* ---- COMPARE.PHP STYLES ---- */
+.compare-top-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; align-items: stretch; }
+.compare-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+.results-list { list-style: none; padding: 0; margin: 0; }
+.results-list li { padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+.results-list li:last-child { border-bottom: none; }
+.form-box.compare-scroll { max-height: 420px; overflow-y: auto; }
+.form-box.compare-scroll .section-title { position: sticky; top: 0; background: var(--surface-dark); z-index: 2; margin-top: 0; padding-top: 0.25rem; border-bottom: 2px solid var(--border-color); }
+
+@media (max-width: 768px) {
+    .compare-top-grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .form-box.compare-scroll { max-height: 300px; }
+}
+
+/* Compare people header */
+.compare-people { display:flex; align-items:center; justify-content:center; gap:1rem; margin: 1rem 0 1.5rem; }
+.compare-person { display:flex; flex-direction:column; align-items:center; gap:0.4rem; min-width: 90px; }
+.vs-pill { padding:0.35rem 0.75rem; border-radius:999px; background: var(--surface-dark); color: var(--text-secondary); border:1px solid var(--border-color); font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+
+@media (max-width: 480px) {
+    .compare-person { min-width: 72px; }
+}
+
+/* Inline variant when placed next to the chooser */
+.compare-people-inline { display:flex; align-items:center; gap:0.75rem; }
+.compare-people-inline .compare-person { min-width:auto; }
+.compare-people-inline .vs-pill { padding:0.25rem 0.5rem; }
+
+/* Friend chooser centering */
+.compare-chooser { display:flex; align-items:center; justify-content:center; }
+.compare-chooser .chooser-inner { display:flex; flex-direction:column; align-items:center; gap:0.6rem; width:100%; }
+.compare-chooser .chooser-select { min-width: 260px; }
+.compare-chooser .chooser-actions { display:flex; gap:0.5rem; }
+
+/* Friend picker menu */
+.compare-people-box { position: relative; }
+.compare-person.clickable { cursor: pointer; }
+.friend-picker-menu { position: absolute; top: 100%; left: 0; background: var(--surface-dark); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); padding: 0.25rem; min-width: 240px; max-height: 300px; overflow-y: auto; z-index: 20; }
+.friend-picker-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem; width: 100%; border: none; background: transparent; color: var(--text-light); text-align: left; border-radius: 6px; cursor: pointer; }
+.friend-picker-item:hover { background: rgba(255,255,255,0.06); }
+.friend-picker-avatar { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.friend-picker-name { flex: 1; }
+.friend-picker-empty { color: var(--text-secondary); padding: 0.75rem; }
