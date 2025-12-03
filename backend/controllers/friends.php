@@ -2,56 +2,51 @@
 /**
  * friends.php
  * ----------------------------------------
- * Handles friend-related actions
- *   - add friend request
- *   - accept/reject friend request
+ * Handles friend-related actions:
+ *   - send friend request
+ *   - accept / reject friend request
  *   - list friends
+ *   - search users
  */
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Friend.php';
 
-// Send a friend request
+/**
+ * Send a friend request
+ */
 function addFriend($userId, $friendId) {
     global $pdo;
 
-    // Prevent sending request to yourself
+    // Don't allow sending a request to yourself
     if ($userId == $friendId) {
         return false;
     }
 
-    // Check if a relationship already exists
+    // Check if any friendship row already exists
     $check = $pdo->prepare("
         SELECT * FROM friends
         WHERE (user_id = :u AND friend_id = :f)
            OR (user_id = :f AND friend_id = :u)
         LIMIT 1
     ");
+    $check->execute(['u' => $userId, 'f' => $friendId]);
 
-    $check->execute([
-        'u' => $userId,
-        'f' => $friendId
-    ]);
-
-    $existing = $check->fetch(PDO::FETCH_ASSOC);
-
-    // If already friends or pending, do nothing
-    if ($existing) {
-        return false;
+    if ($check->fetch(PDO::FETCH_ASSOC)) {
+        return false; // already friends or pending
     }
 
-    // Insert new friend request
+    // Insert new pending request
     $stmt = $pdo->prepare("
         INSERT INTO friends (user_id, friend_id, status)
         VALUES (:u, :f, 'pending')
     ");
-
-    return $stmt->execute([
-        'u' => $userId,
-        'f' => $friendId
-    ]);
+    return $stmt->execute(['u' => $userId, 'f' => $friendId]);
 }
-// Get all pending friend requests for a user (incoming requests)
+
+/**
+ * Get incoming pending requests (people who sent YOU a request)
+ */
 function getPendingFriendRequests($userId) {
     global $pdo;
 
@@ -59,8 +54,8 @@ function getPendingFriendRequests($userId) {
         SELECT 
             f.user_id AS requester_id,
             u.user_id AS user_id,
-            u.username,
-            u.avatar_url
+            u.username
+            -- , u.avatar_url   -- Uncomment later if you add this column
         FROM friends f
         JOIN users u ON u.user_id = f.user_id
         WHERE f.friend_id = :uid
@@ -70,12 +65,12 @@ function getPendingFriendRequests($userId) {
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['uid' => $userId]);
-
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
-// Get all outgoing pending friend requests (requests the user has sent)
+/**
+ * Get outgoing pending requests (requests YOU sent)
+ */
 function getSentFriendRequests($userId) {
     global $pdo;
 
@@ -83,8 +78,8 @@ function getSentFriendRequests($userId) {
         SELECT 
             f.friend_id AS recipient_id,
             u.user_id AS user_id,
-            u.username,
-            u.avatar_url
+            u.username
+            -- , u.avatar_url   -- Uncomment later if avatars added
         FROM friends f
         JOIN users u ON u.user_id = f.friend_id
         WHERE f.user_id = :uid
@@ -94,79 +89,78 @@ function getSentFriendRequests($userId) {
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['uid' => $userId]);
-
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Remove a friend
-function removeFriend($userId, $friendId) {
-    // TODO: Implement logic to remove a friend
-}
-
-
-// Accept a friend request
+/**
+ * Accept a friend request
+ */
 function acceptFriendRequest($requesterId, $receiverId) {
     global $pdo;
 
     $sql = "
         UPDATE friends
         SET status = 'accepted'
-        WHERE user_id = :requester_id
-          AND friend_id = :receiver_id
+        WHERE user_id = :requester
+          AND friend_id = :receiver
           AND status = 'pending'
     ";
 
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([
-        'requester_id' => $requesterId,
-        'receiver_id' => $receiverId
+        'requester' => $requesterId,
+        'receiver'  => $receiverId
     ]);
 }
 
-
-// Reject a friend request (delete the pending request)
+/**
+ * Reject a friend request (delete the row)
+ */
 function rejectFriendRequest($requesterId, $receiverId) {
     global $pdo;
 
     $sql = "
         DELETE FROM friends
-        WHERE user_id = :requester_id
-          AND friend_id = :receiver_id
+        WHERE user_id = :requester
+          AND friend_id = :receiver
           AND status = 'pending'
     ";
 
     $stmt = $pdo->prepare($sql);
     return $stmt->execute([
-        'requester_id' => $requesterId,
-        'receiver_id' => $receiverId
+        'requester' => $requesterId,
+        'receiver'  => $receiverId
     ]);
 }
 
-
-// List all friends for a user
+/**
+ * List all accepted friends of a user
+ */
 function listFriends($userId) {
     global $pdo;
 
     $sql = "
         SELECT 
             u.user_id AS id,
-            u.username,
-            u.avatar_url
+            u.username
+            -- , u.avatar_url   -- Commented for now, can re-enable later
         FROM friends f
         JOIN users u ON (
                (f.user_id = :uid AND u.user_id = f.friend_id)
             OR (f.friend_id = :uid AND u.user_id = f.user_id)
         )
         WHERE f.status = 'accepted'
+        ORDER BY u.username ASC
     ";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['uid' => $userId]);
-
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Search for users to add as friends
+/**
+ * Search for people to add as friends
+ */
 function searchUsers($query, $currentUserId) {
     global $pdo;
 
@@ -176,9 +170,9 @@ function searchUsers($query, $currentUserId) {
 
     $sql = "
         SELECT 
-            user_id AS id, 
-            username,
-            avatar_url
+            user_id AS id,
+            username
+            -- , avatar_url   -- Commented for later
         FROM users
         WHERE user_id != :current_id
           AND username LIKE :q
@@ -195,13 +189,21 @@ function searchUsers($query, $currentUserId) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+/**
+ * Returns friendship status:
+ *   - self
+ *   - none
+ *   - friends
+ *   - pending_sent
+ *   - pending_received
+ */
 function getFriendshipStatus($userId, $otherUserId) {
     global $pdo;
-    
+
     if ($userId == $otherUserId) {
         return 'self';
     }
-    
+
     $stmt = $pdo->prepare("
         SELECT status, user_id, friend_id
         FROM friends
@@ -210,22 +212,20 @@ function getFriendshipStatus($userId, $otherUserId) {
         LIMIT 1
     ");
     $stmt->execute([$userId, $otherUserId, $otherUserId, $userId]);
-    $friendship = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$friendship) {
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) {
         return 'none';
     }
-    
-    if ($friendship['status'] === 'accepted') {
+
+    if ($row['status'] === 'accepted') {
         return 'friends';
     }
-    
-    if ($friendship['user_id'] == $userId) {
+
+    // Determine who sent the request
+    if ($row['user_id'] == $userId) {
         return 'pending_sent';
     } else {
         return 'pending_received';
     }
 }
-
-
-

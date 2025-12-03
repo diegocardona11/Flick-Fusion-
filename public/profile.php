@@ -31,9 +31,20 @@ $viewingUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : $currentUserI
 $isOwnProfile = ($viewingUserId === $currentUserId);
 
 if (!$isOwnProfile) {
-    $stmt = $pdo->prepare("SELECT user_id, username, email, avatar_url, profile_privacy FROM users WHERE user_id = ?");
+    $stmt = $pdo->prepare("
+        SELECT 
+            user_id, 
+            username, 
+            email, 
+            -- avatar_url,   -- commented out (column doesn't exist)
+            profile_privacy
+        FROM users
+        WHERE user_id = ?
+    ");
     $stmt->execute([$viewingUserId]);
     $viewedUser = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
     
     if (!$viewedUser) {
         header('Location: index.php');
