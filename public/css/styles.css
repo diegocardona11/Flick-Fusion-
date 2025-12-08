@@ -1514,7 +1514,7 @@ main.container {
     border-color: var(--accent-primary);
 }
 /* ===== Refactored Friend Card Layout ===== */
-.friend-card { position:relative; overflow:hidden; }
+.friend-card { position:relative; overflow:visible; }
 .friend-card { 
     display:grid;
     grid-template-rows: auto auto auto auto; /* pill, avatar, name, actions */
@@ -1546,6 +1546,92 @@ main.container {
 .pill-pending { background:linear-gradient(90deg,#FFA07A,#FF8B5A); color:#3a1d0f; }
 .pill-sent { background:linear-gradient(90deg,#F7DC6F,#F5C842); color:#3a3008; }
 .btn-sm { padding:0.45rem 0.9rem; font-size:0.75rem; line-height:1; }
+
+/* Friend dropdown styles */
+.friend-dropdown {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.friend-status-btn-styled {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    justify-content: center;
+}
+
+.friend-status-btn-styled .dropdown-arrow {
+    transition: transform 0.2s ease;
+}
+
+.friend-dropdown.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.friend-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.friend-dropdown-menu.show {
+    display: block;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.friend-dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--surface-dark);
+}
+
+.dropdown-item-danger:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #FF6B6B;
+}
+
+.dropdown-item svg {
+    flex-shrink: 0;
+}
 
 .empty-state {
     text-align: center;

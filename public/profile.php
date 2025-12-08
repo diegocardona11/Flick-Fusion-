@@ -119,6 +119,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'Could not reject friend request.';
         }
     }
+
+    if (isset($_POST['remove_friend']) && !$isOwnProfile) {
+        $result = removeFriend($currentUserId, $viewingUserId);
+        if ($result) {
+            $successMessage = 'Friend removed.';
+            $friendshipStatus = 'none';
+        } else {
+            $errorMessage = 'Could not remove friend.';
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isOwnProfile) {
@@ -356,7 +366,12 @@ include 'partials/header.php';
                             </form>
                         </div>
                     <?php elseif ($friendshipStatus === 'friends'): ?>
-                        <button class="btn btn-secondary" disabled>✓ Friends</button>
+                        <div class="pending-banner" role="status">
+                            <span><strong>✓ Friends</strong></span>
+                            <form method="POST" class="banner-actions">
+                                <button type="submit" name="remove_friend" class="btn btn-secondary">Unfriend</button>
+                            </form>
+                        </div>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
