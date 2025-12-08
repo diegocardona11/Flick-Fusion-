@@ -129,6 +129,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'Could not remove friend.';
         }
     }
+
+    if (isset($_POST['cancel_request']) && !$isOwnProfile) {
+        $result = removeFriend($currentUserId, $viewingUserId);
+        if ($result) {
+            $successMessage = 'Friend request cancelled.';
+            $friendshipStatus = 'none';
+        } else {
+            $errorMessage = 'Could not cancel friend request.';
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isOwnProfile) {
