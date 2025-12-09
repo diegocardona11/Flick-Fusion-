@@ -1566,6 +1566,13 @@ main.container {
     transition: transform 0.2s ease;
 }
 
+/* Profile header placement for friend button */
+.friend-action-row { margin-top: 0.5rem; display:flex; justify-content:flex-start; align-items:center; }
+.friend-action-row .btn-lg { padding: 0.6rem 1.15rem; font-size: 1rem; }
+
+/* Dropdown menu is allowed to overflow from profile header */
+.profile-header { overflow: visible; }
+
 .friend-dropdown.active .dropdown-arrow {
     transform: rotate(180deg);
 }
@@ -1767,30 +1774,64 @@ main.container {
 
 /* ---- Custom Confirm Dialog ---- */
 .custom-confirm {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(26, 26, 29, 0.98);
-    border-radius: var(--border-radius);
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.06); /* subtle overlay, not full blackout */
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
-    animation: fadeIn 0.2s ease;
+    z-index: 1000;
+    animation: fadeIn 0.12s ease;
 }
 
 .confirm-content {
-    text-align: center;
-    padding: 1.5rem;
+    text-align: left;
+    /* extra top padding so the close button does not overlap the content */
+    padding: 1.6rem 1.25rem 1rem;
+    background: var(--surface-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    min-width: 320px;
+    max-width: 420px;
+    position: relative;
 }
-
 .confirm-content p {
     color: var(--text-light);
     margin-bottom: 1.5rem;
     font-size: 1rem;
 }
+
+.confirm-avatar {
+    width:56px;
+    height:56px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    background:var(--bg-dark);
+    border:2px solid var(--border-color);
+    color:var(--text-light);
+}
+
+.modal-close {
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.modal-close:hover { color: var(--text-light); background: rgba(255,255,255,0.02); }
+
+.confirm-name { font-size:1.05rem; }
 
 .confirm-actions {
     display: flex;
