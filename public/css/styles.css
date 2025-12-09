@@ -1613,34 +1613,37 @@ main.container {
     gap: 1.5rem;
 }
 
-/* Stacked card layout for the Friends page to match main cards */
-.friends-page .friends-grid {
-    grid-template-columns: 1fr; /* single column stacked cards */
-    gap: 1rem;
+/* Stacked card layout for small screens only; desktop retains main-branch multi-column layout */
+@media (max-width: 1024px) {
+    /* Stack friends as single-column cards on small screens but keep the desktop card internals */
+    .friends-page .friends-grid {
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+    }
+
+    /* Ensure cards span full width and maintain original visual style */
+    .friends-page .friend-card {
+        width: 100%;
+        padding: 1.1rem;
+        box-sizing: border-box;
+    }
+
+    /* Add subtle visual separator between stacked cards (except after last card) */
+    .friends-page .friend-card:not(:last-child) {
+        margin-bottom: 0.5rem;
+    }
+    .friends-page .friend-card:not(:last-child)::after {
+        content: '';
+        display: block;
+        height: 1px;
+        background: rgba(255,255,255,0.04);
+        margin-top: 0.6rem;
+        border-radius: 1px;
+    }
+
+    /* Keep action buttons consistent in size on mobile */
+    .friends-page .friend-actions .btn { padding: 0.55rem 0.9rem; font-size: 0.95rem; }
 }
-
-.friends-page .friend-card {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    min-height: auto;
-    text-align: left;
-}
-
-.friends-page .friend-avatar-link { width: auto; margin-right: 1rem; }
-.friends-page .friend-avatar { width:64px; height:64px; font-size:2rem; margin:0; }
-.friends-page .friend-info { flex: 1; display:flex; flex-direction:column; justify-content:center; }
-.friends-page .friend-name { font-size:1.05rem; text-align:left; }
-.friends-page .friend-actions { width: auto; margin-left: 1rem; display:flex; gap:0.5rem; align-items:center; }
-
-/* Make stacked friend cards visually match other cards */
-.friends-page .friend-card { background: var(--surface-dark); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
-
-/* Tighter spacing for action buttons on friends page */
-.friends-page .friend-actions .btn { padding: 0.5rem 0.85rem; font-size:0.95rem; }
 
 .friend-card {
     background: var(--surface-dark);
