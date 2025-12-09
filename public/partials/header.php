@@ -26,7 +26,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
   <div class="header-content container">
     <a href="index.php" class="logo"><strong>Flick Fusion</strong></a>
 
-    <nav class="main-nav">
+    <!-- Mobile nav toggle -->
+    <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mainNav">
+      <span class="hamburger" aria-hidden="true"></span>
+    </button>
+
+    <nav id="mainNav" class="main-nav">
           <?php if (!empty($_SESSION['user_id'])): ?>
               <a href="index.php">Home</a>
               <a href="movies.php">Find Movies</a>

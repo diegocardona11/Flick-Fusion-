@@ -225,7 +225,7 @@ main.container {
     flex-shrink: 0;
  }
 
- .header-content {
+.header-content {
     display: flex;
     align-items: center;
     width: 100%;
@@ -245,6 +245,8 @@ main.container {
  .logo strong {
     color: var(--accent-primary);
  }
+
+/* Default header arrangement (desktop): logo in flow, nav and profile align naturally */
 
  .main-nav {
     display: flex;
@@ -284,6 +286,118 @@ main.container {
     align-items: center;
     gap: 1.5rem;
  }
+
+/* Nav toggle (hamburger) */
+.nav-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    margin-left: 0.75rem;
+}
+.nav-toggle .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-light);
+    position: relative;
+}
+.nav-toggle .hamburger::before,
+.nav-toggle .hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--text-light);
+}
+.nav-toggle .hamburger::before { top: -7px; }
+.nav-toggle .hamburger::after { top: 7px; }
+
+/* Morph hamburger to X when open */
+.nav-toggle.open .hamburger { background: transparent; }
+.nav-toggle.open .hamburger::before { transform: rotate(45deg); top: 0; }
+.nav-toggle.open .hamburger::after { transform: rotate(-45deg); top: 0; }
+.nav-toggle .hamburger,
+.nav-toggle .hamburger::before,
+.nav-toggle .hamburger::after { transition: transform 0.18s ease, top 0.18s ease, background 0.18s ease; }
+
+/* Small-screen header layout: center logo, profile left, hamburger right */
+@media (max-width: 768px) {
+    .header-content { position: relative; }
+
+    /* Center the logo visually in the header on small screens */
+    .header-content .logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 80;
+    }
+
+    /* Position user profile to the left on small screens */
+    .header-content .user-auth {
+        position: absolute;
+        left: 1rem;
+        z-index: 90;
+    }
+
+    /* Ensure nav-toggle sits right on small screens */
+    .nav-toggle {
+        position: absolute;
+        right: 1rem;
+        z-index: 90;
+    }
+}
+
+/* Responsive navbar: stacked and collapsible */
+@media (max-width: 768px) {
+    .nav-toggle { display: inline-flex; }
+    .main-nav {
+        display: none; /* hidden by default on small screens */
+        /* position will be set by JS to fixed when opened so the menu spans full viewport width */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface-dark);
+        border-top: 1px solid var(--border-color);
+        padding: 0.25rem 0.75rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        z-index: 90;
+        flex-direction: column;
+        gap: 0.25rem;
+        transform-origin: top center;
+        transform: translateY(-10px);
+        opacity: 0;
+        transition: transform 200ms ease, opacity 200ms ease;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    /* When opened, display and animate into place */
+    .main-header.nav-open .main-nav,
+    .main-nav.open {
+        display: flex;
+        transform: translateY(0);
+        opacity: 1;
+        border-top-left-radius: 0; /* visually connect to header */
+        border-top-right-radius: 0;
+    }
+
+    .main-nav a {
+        display: block;
+        padding: 0.65rem 0.5rem;
+        border-radius: 6px;
+        color: var(--text-light);
+        font-weight: 600;
+    }
+
+    .main-nav a:hover { background: rgba(255,255,255,0.02); }
+
+    /* Keep header content layout reasonable when nav opens */
+    .header-content { position: relative; }
+}
 
  .header-search {
     display: flex;
@@ -406,20 +520,20 @@ main.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     background-color: var(--bg-dark);
-    padding: 2rem;
+    padding: 1.1rem 1rem;
     border-radius: var(--border-radius);
 }
 
 .search-header-text h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem; /* smaller heading */
+    margin-bottom: 0.25rem;
 }
 
 .search-header-text p {
         color: var(--text-secondary);
-        font-size: 1.1rem;
+        font-size: 0.98rem; /* slightly smaller secondary text */
         margin-bottom: 0;
 }
 
@@ -1411,7 +1525,7 @@ main.container {
 .friends-page {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1.25rem 1rem; 
 }
 
 .friends-header {
@@ -1499,6 +1613,35 @@ main.container {
     gap: 1.5rem;
 }
 
+/* Stacked card layout for the Friends page to match main cards */
+.friends-page .friends-grid {
+    grid-template-columns: 1fr; /* single column stacked cards */
+    gap: 1rem;
+}
+
+.friends-page .friend-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    min-height: auto;
+    text-align: left;
+}
+
+.friends-page .friend-avatar-link { width: auto; margin-right: 1rem; }
+.friends-page .friend-avatar { width:64px; height:64px; font-size:2rem; margin:0; }
+.friends-page .friend-info { flex: 1; display:flex; flex-direction:column; justify-content:center; }
+.friends-page .friend-name { font-size:1.05rem; text-align:left; }
+.friends-page .friend-actions { width: auto; margin-left: 1rem; display:flex; gap:0.5rem; align-items:center; }
+
+/* Make stacked friend cards visually match other cards */
+.friends-page .friend-card { background: var(--surface-dark); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+
+/* Tighter spacing for action buttons on friends page */
+.friends-page .friend-actions .btn { padding: 0.5rem 0.85rem; font-size:0.95rem; }
+
 .friend-card {
     background: var(--surface-dark);
     border: 1px solid var(--border-color);
@@ -1521,7 +1664,7 @@ main.container {
     align-items:start;
     justify-items:center;
     gap:0.6rem;
-    min-height:260px;
+    min-height:180px; /* reduced so lists are denser and easier to scroll */
     padding:1.1rem 0.9rem;
 }
 .friend-card .card-link { display:grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
@@ -1580,9 +1723,9 @@ main.container {
 .friend-dropdown-menu {
     display: none;
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: 100%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-8px);
     background: var(--bg-dark);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -1590,11 +1733,14 @@ main.container {
     z-index: 100;
     min-width: 150px;
     overflow: hidden;
+    opacity: 0;
+    transition: transform 160ms ease, opacity 160ms ease;
 }
 
 .friend-dropdown-menu.show {
     display: block;
-    animation: dropdownFadeIn 0.15s ease;
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
 }
 
 @keyframes dropdownFadeIn {
@@ -1831,6 +1977,67 @@ main.container {
 
 .modal-close:hover { color: var(--text-light); background: rgba(255,255,255,0.02); }
 
+/* ===== Responsive adjustments for small screens (phones/tablets) ===== */
+@media (max-width: 768px) {
+    /* Stack profile header vertically and center content */
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+
+    .profile-info { text-align: center; }
+
+    /* Make friends grid single-column on small screens */
+    .friends-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .friend-card {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.9rem;
+        min-height: auto;
+    }
+
+    .friend-avatar { width:56px; height:56px; font-size:1.6rem; }
+    .friend-info { min-height: 0; text-align: left; }
+    .friend-name { font-size: 0.95rem; }
+
+    /* Place actions to the right of the card */
+    .friend-actions { width: auto; margin-left: auto; display:flex; align-items:center; }
+
+    /* Make the friend-action-row centered and full-width on small screens */
+    .friend-action-row { justify-content: center; }
+
+    /* Make modal responsive: use full width with internal padding */
+    .confirm-content {
+        width: calc(100% - 32px);
+        max-width: 520px;
+        min-width: auto;
+        padding: 1.25rem;
+        margin: 0 16px;
+    }
+
+    /* Adjust confirm header spacing */
+    .confirm-header { flex-direction: column; align-items: flex-start; }
+    .confirm-message { font-size: 0.98rem; }
+
+    /* Buttons: make them full width in stacked layout */
+    .confirm-actions { display:flex; gap:0.5rem; flex-direction: row; }
+    .confirm-actions .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 420px) {
+    .friend-card { gap:0.5rem; }
+    .friend-avatar { width:48px; height:48px; font-size:1.4rem; }
+    .profile-username { font-size:1.5rem; }
+}
+
 .confirm-name { font-size:1.05rem; }
 
 .confirm-actions {
@@ -1883,3 +2090,26 @@ main.container {
 .friend-picker-avatar { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
 .friend-picker-name { flex: 1; }
 .friend-picker-empty { color: var(--text-secondary); padding: 0.75rem; }
+
+/* Make friends lists scrollable when they grow large so users can scroll on small viewports */
+.friends-section .friends-grid {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 0.5rem; /* visual spacing for scrollbar */
+}
+
+/* Tighter max-heights for smaller screens */
+@media (max-width: 1024px) {
+    .friends-section .friends-grid { max-height: calc(100vh - 240px); }
+}
+@media (max-width: 768px) {
+    .friends-section .friends-grid { max-height: calc(100vh - 200px); }
+}
+
+/* Make friend-picker-menu smoother on touch devices */
+.friend-picker-menu { -webkit-overflow-scrolling: touch; }
+
+/* Ensure long dropdowns and modals remain scrollable without blocking the page */
+.friend-dropdown-menu { max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.confirm-content { max-height: 75vh; overflow-y: auto; }
