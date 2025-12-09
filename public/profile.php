@@ -119,6 +119,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'Could not reject friend request.';
         }
     }
+
+    if (isset($_POST['remove_friend']) && !$isOwnProfile) {
+        $result = removeFriend($currentUserId, $viewingUserId);
+        if ($result) {
+            $successMessage = 'Friend removed.';
+            $friendshipStatus = 'none';
+        } else {
+            $errorMessage = 'Could not remove friend.';
+        }
+    }
+
+    if (isset($_POST['cancel_request']) && !$isOwnProfile) {
+        $result = removeFriend($currentUserId, $viewingUserId);
+        if ($result) {
+            $successMessage = 'Friend request cancelled.';
+            $friendshipStatus = 'none';
+        } else {
+            $errorMessage = 'Could not cancel friend request.';
+        }
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isOwnProfile) {
@@ -291,7 +311,7 @@ include 'partials/header.php';
 
 <main class="container profile-page">
     <?php if (!$isOwnProfile): ?>
-        <div style="margin-bottom: 1rem;">
+        <div style="padding-top: 1rem; margin-bottom: 1rem;">
             <a href="friends.php" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">← Back to Friends</a>
         </div>
     <?php endif; ?>
@@ -340,13 +360,13 @@ include 'partials/header.php';
             <?php if ($isOwnProfile): ?>
                 <p class="profile-email"><?= htmlspecialchars($displayEmail) ?></p>
             <?php else: ?>
-                <div style="margin-top: 1rem;">
+                <div class="friend-action-row">
                     <?php if ($friendshipStatus === 'none'): ?>
                         <form method="POST" style="display: inline-block;">
-                            <button type="submit" name="add_friend" class="btn btn-primary">Add Friend</button>
+                            <button type="submit" name="add_friend" class="btn btn-primary btn-lg">Add Friend</button>
                         </form>
                     <?php elseif ($friendshipStatus === 'pending_sent'): ?>
-                        <button class="btn btn-secondary" disabled>Friend Request Sent</button>
+                        <button class="btn btn-secondary btn-lg" disabled>Friend Request Sent</button>
                     <?php elseif ($friendshipStatus === 'pending_received'): ?>
                         <div class="pending-banner" role="status">
                             <span><strong>Friend request pending</strong></span>
@@ -356,7 +376,29 @@ include 'partials/header.php';
                             </form>
                         </div>
                     <?php elseif ($friendshipStatus === 'friends'): ?>
-                        <button class="btn btn-secondary" disabled>✓ Friends</button>
+                        <div class="decision-row">
+                            <div class="friend-dropdown">
+                                <button class="btn btn-primary btn-lg friend-status-btn-styled" onclick="toggleFriendMenu(event, <?= $viewingUserId ?>)">
+                                    Friends
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-arrow">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                                <div class="friend-dropdown-menu" id="friendMenu<?= $viewingUserId ?>">
+                                    <form method="POST" action="profile.php?user_id=<?= $viewingUserId ?>">
+                                        <button type="button" name="remove_friend" data-username="<?= htmlspecialchars($displayUsername) ?>" data-avatar="<?= $currentAvatar ? htmlspecialchars($currentAvatar['emoji']) : '' ?>" data-avatar-color="<?= $currentAvatar ? htmlspecialchars($currentAvatar['color']) : '' ?>" class="dropdown-item dropdown-item-danger confirm-unfriend">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="8.5" cy="7" r="4"></circle>
+                                                <line x1="18" y1="8" x2="23" y2="13"></line>
+                                                <line x1="23" y1="8" x2="18" y2="13"></line>
+                                            </svg>
+                                            Unfriend
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

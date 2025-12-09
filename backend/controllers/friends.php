@@ -134,6 +134,28 @@ function rejectFriendRequest($requesterId, $receiverId) {
 }
 
 /**
+ * Remove a friendship (either direction) if it exists
+ */
+function removeFriend($userId, $friendId) {
+    global $pdo;
+
+    $sql = "
+        DELETE FROM friends
+        WHERE (
+                (user_id = :u AND friend_id = :f)
+             OR (user_id = :f AND friend_id = :u)
+        )
+        AND status IN ('accepted', 'pending')
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([
+        'u' => $userId,
+        'f' => $friendId
+    ]);
+}
+
+/**
  * List all accepted friends of a user
  */
 function listFriends($userId) {

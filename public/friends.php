@@ -281,7 +281,31 @@ include 'partials/header.php';
                                 </span>
                             </div>
                         </a>
-                        <div class="friend-actions"></div>
+                        <div class="friend-actions">
+                            <div class="decision-row">
+                                <div class="friend-dropdown"> <!-- Dropdown for friend actions: remove friend -->
+                                    <button class="btn btn-primary btn-sm friend-status-btn-styled" onclick="toggleFriendMenu(event, <?= $friend['id'] ?>)">
+                                        Friends
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="dropdown-arrow">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </button>
+                                    <div class="friend-dropdown-menu" id="friendMenu<?= $friend['id'] ?>">
+                                        <form method="post" action="profile.php?user_id=<?= $friend['id'] ?>">
+                                                       <button type="button" name="remove_friend" data-username="<?= htmlspecialchars($friend['username']) ?>" data-avatar="<?= isset($avatarData['emoji']) ? htmlspecialchars($avatarData['emoji']) : '' ?>" data-avatar-color="<?= isset($avatarData['color']) ? htmlspecialchars($avatarData['color']) : '' ?>" class="dropdown-item dropdown-item-danger confirm-unfriend">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                                    <line x1="18" y1="8" x2="23" y2="13"></line>
+                                                    <line x1="23" y1="8" x2="18" y2="13"></line>
+                                                </svg>
+                                                Unfriend
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 <?php endforeach; ?>
 
@@ -321,7 +345,13 @@ include 'partials/header.php';
                                     </span>
                                 </div>
                             </a>
-                            <div class="friend-actions"></div>
+                            <div class="friend-actions">
+                                <div class="decision-row">
+                                    <form method="post" action="profile.php?user_id=<?= $request['recipient_id'] ?>" style="display: inline;">
+                                        <button type="submit" name="cancel_request" class="btn btn-secondary btn-sm">Cancel Request</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     <?php endforeach; ?>
             </div>
