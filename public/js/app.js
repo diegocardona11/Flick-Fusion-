@@ -2,7 +2,51 @@
 // Main JavaScript file for Flick Fusion application
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Future JavaScript functionality can be added here
+    // Mobile nav toggle
+    const navToggle = document.querySelector('.nav-toggle');
+    const header = document.querySelector('.main-header');
+    const mainNav = document.getElementById('mainNav');
+
+    if (navToggle && header && mainNav) {
+        navToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+            navToggle.setAttribute('aria-expanded', String(!expanded));
+            header.classList.toggle('nav-open');
+            mainNav.classList.toggle('open');
+            // morph hamburger to X
+            navToggle.classList.toggle('open');
+
+            // Make the mobile nav full-width and positioned below the header without pushing content
+            if (mainNav.classList.contains('open')) {
+                // compute header bottom relative to viewport and position nav fixed below it
+                const rect = header.getBoundingClientRect();
+                mainNav.style.position = 'fixed';
+                mainNav.style.left = '0';
+                mainNav.style.right = '0';
+                mainNav.style.top = (rect.bottom) + 'px';
+                mainNav.style.width = '100%';
+                mainNav.style.zIndex = '995';
+            } else {
+                // clean up inline styles
+                mainNav.style.position = '';
+                mainNav.style.left = '';
+                mainNav.style.right = '';
+                mainNav.style.top = '';
+                mainNav.style.width = '';
+                mainNav.style.zIndex = '';
+            }
+        });
+
+        // Close nav when clicking outside
+        document.addEventListener('click', (ev) => {
+            if (!ev.target.closest('.header-content') && header.classList.contains('nav-open')) {
+                header.classList.remove('nav-open');
+                mainNav.classList.remove('open');
+                navToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 });
 
 // Toggle friend dropdown menu

@@ -79,7 +79,9 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    /* Good minimum horizontal padding on all viewports */
+    padding-block: 2rem;
+    padding-inline: clamp(12px, 4vw, 24px);
 }
 
 .centered-container {
@@ -97,6 +99,9 @@ main.container {
     width: 100%;
     max-width: 1200px;
     box-sizing: border-box;
+    /* ensure internal padding matches container's horizontal spacing */
+    padding-inline: clamp(12px, 4vw, 24px);
+    padding-block: 2rem;
 }
 
 
@@ -225,7 +230,7 @@ main.container {
     flex-shrink: 0;
  }
 
- .header-content {
+.header-content {
     display: flex;
     align-items: center;
     width: 100%;
@@ -245,6 +250,8 @@ main.container {
  .logo strong {
     color: var(--accent-primary);
  }
+
+/* Default header arrangement (desktop): logo in flow, nav and profile align naturally */
 
  .main-nav {
     display: flex;
@@ -284,6 +291,123 @@ main.container {
     align-items: center;
     gap: 1.5rem;
  }
+
+/* Nav toggle (hamburger) */
+.nav-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    margin-left: 0.75rem;
+}
+.nav-toggle .hamburger {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-light);
+    position: relative;
+}
+.nav-toggle .hamburger::before,
+.nav-toggle .hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 22px;
+    height: 2px;
+    background: var(--text-light);
+}
+.nav-toggle .hamburger::before { top: -7px; }
+.nav-toggle .hamburger::after { top: 7px; }
+
+/* Morph hamburger to X when open */
+.nav-toggle.open .hamburger { background: transparent; }
+.nav-toggle.open .hamburger::before { transform: rotate(45deg); top: 0; }
+.nav-toggle.open .hamburger::after { transform: rotate(-45deg); top: 0; }
+.nav-toggle .hamburger,
+.nav-toggle .hamburger::before,
+.nav-toggle .hamburger::after { transition: transform 0.18s ease, top 0.18s ease, background 0.18s ease; }
+
+/* Small-screen header layout: center logo, profile left, hamburger right */
+@media (max-width: 768px) {
+    .header-content { position: relative; }
+
+    /* Center the logo visually in the header on small screens */
+    .header-content .logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 80;
+        /* keep the clickable area tight to the text */
+        display: inline-block;
+        width: auto;
+        padding: 0.15rem 0.4rem;
+        white-space: nowrap;
+    }
+
+    /* Position user profile to the left on small screens */
+    .header-content .user-auth {
+        position: absolute;
+        left: 1rem;
+        z-index: 90;
+    }
+
+    /* nav-toggle sits right on small screens */
+    .nav-toggle {
+        position: absolute;
+        right: 1rem;
+        z-index: 90;
+    }
+}
+
+/* Responsive navbar: stacked and collapsible */
+@media (max-width: 768px) {
+    .nav-toggle { display: inline-flex; }
+    .main-nav {
+        display: none; /* hidden by default on small screens */
+        /* position will be set by JS to fixed when opened so the menu spans full viewport width */
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface-dark);
+        border-top: 1px solid var(--border-color);
+        padding: 0.25rem 0.75rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        z-index: 90;
+        flex-direction: column;
+        gap: 0.25rem;
+        transform-origin: top center;
+        transform: translateY(-10px);
+        opacity: 0;
+        transition: transform 200ms ease, opacity 200ms ease;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    /* When opened, display and animate into place */
+    .main-header.nav-open .main-nav,
+    .main-nav.open {
+        display: flex;
+        transform: translateY(0);
+        opacity: 1;
+        border-top-left-radius: 0; /* visually connect to header */
+        border-top-right-radius: 0;
+    }
+
+    .main-nav a {
+        display: block;
+        padding: 0.65rem 0.5rem;
+        border-radius: 6px;
+        color: var(--text-light);
+        font-weight: 600;
+    }
+
+    .main-nav a:hover { background: rgba(255,255,255,0.02); }
+
+    /* Keep header content layout reasonable when nav opens */
+    .header-content { position: relative; }
+}
 
  .header-search {
     display: flex;
@@ -406,33 +530,40 @@ main.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     background-color: var(--bg-dark);
-    padding: 2rem;
+    padding: 1.1rem 1rem;
     border-radius: var(--border-radius);
 }
 
 .search-header-text h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem; /* smaller heading */
+    margin-bottom: 0.25rem;
 }
 
 .search-header-text p {
         color: var(--text-secondary);
-        font-size: 1.1rem;
+        font-size: 0.98rem; /* slightly smaller secondary text */
         margin-bottom: 0;
 }
 
 .search-form {
     display: flex;
-    min-width: 500px;
     gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0; /* allow the form to shrink on small viewports */
+    align-items: center;
+    max-width: 550px;
 }
 .search-input-large {
     flex-grow: 1;
     font-size: 1.1rem;
     padding: 0.75rem 1rem;
 }
+
+/* inputs/buttons within the search form use border-box sizing for reliable shrink behavior */
+.search-form input,
+.search-form button { box-sizing: border-box; }
 
 .results-title {
     border-bottom: 1px solid var(--border-color);
@@ -614,6 +745,67 @@ main.container {
     white-space: nowrap;
 }
 
+/* Tighten filter controls on mobile to prevent count from wrapping */
+@media (max-width: 768px) {
+    .filter-controls {
+        gap: 0.5rem;
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+
+    .filter-form {
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        gap: 0.35rem;
+        flex: 0 0 auto;
+    }
+
+    .filter-group label {
+        font-size: 0.85rem;
+    }
+
+    .filter-select {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .filter-count {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.6rem;
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-controls {
+        gap: 0.4rem;
+        padding: 0.6rem;
+    }
+
+    .filter-form {
+        gap: 0.4rem;
+    }
+
+    .filter-group label {
+        font-size: 0.8rem;
+    }
+
+    .filter-select {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .filter-count {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+}
+
 .mylist-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -773,6 +965,22 @@ main.container {
     min-width: 70px;
 }
 
+/* Stack card action buttons vertically on small screens for better mobile fit */
+@media (max-width: 480px) {
+    .card-actions {
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.6rem;
+    }
+
+    .card-actions button {
+        flex: 1 1 auto;
+        min-width: 100%;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.9rem;
+    }
+}
+
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -820,7 +1028,7 @@ main.container {
 /* ---- Responsive Design ---- */
 @media (max-width: 1024px) {
     .container,
-    main.container { padding: 1.5rem 1rem; }
+    main.container { padding-block: 1.5rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Header stacks across lines */
     .main-header { height: auto; padding: 0.75rem 1rem; }
@@ -837,7 +1045,7 @@ main.container {
 
 @media (max-width: 768px) {
     .container,
-    main.container { padding: 1rem 0.75rem; }
+    main.container { padding-block: 1rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Header stacks neatly */
     .header-content { flex-wrap: wrap; justify-content: center; }
@@ -872,7 +1080,7 @@ main.container {
 
 @media (max-width: 480px) {
     .container,
-    main.container { padding: 0.75rem 0.5rem; }
+    main.container { padding-block: 0.75rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Text sizing */
     .welcome-title { font-size: 2rem; }
@@ -883,6 +1091,28 @@ main.container {
 
     /* My list grid smallest columns */
     .mylist-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* Very small screens: reduce search input/button sizes so the form fits neatly inside the boxed header */
+@media (max-width: 420px) {
+    .search-form {
+        gap: 0.35rem;
+        flex-direction: column; /* keep stacked but tighter */
+        align-items: stretch;
+    }
+
+    .search-input-large {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .search-form .btn {
+        font-size: 0.95rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Reduce header padding slightly to give more room */
+    .search-page-header { padding: 0.9rem; }
 }
 
 /* ========================================
@@ -1411,7 +1641,7 @@ main.container {
 .friends-page {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1.25rem 1rem; 
 }
 
 .friends-header {
@@ -1499,13 +1729,54 @@ main.container {
     gap: 1.5rem;
 }
 
+/* Stacked card layout for small screens only; desktop retains main-branch multi-column layout */
+@media (max-width: 1024px) {
+    /* Stack friends as single-column cards on small screens but keep the desktop card internals */
+    .friends-page .friends-grid {
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+    }
+
+    /* Ensure cards span full width and maintain original visual style */
+    .friends-page .friend-card {
+        width: 100%;
+        padding: 1.1rem;
+        box-sizing: border-box;
+    }
+
+    /* Add subtle visual separator between stacked cards (except after last card) */
+    .friends-page .friend-card:not(:last-child) {
+        margin-bottom: 0.5rem;
+    }
+    .friends-page .friend-card:not(:last-child)::after {
+        content: '';
+        display: block;
+        height: 1px;
+        background: rgba(255,255,255,0.04);
+        margin-top: 0.6rem;
+        border-radius: 1px;
+    }
+
+    /* Keep action buttons consistent in size on mobile */
+    .friends-page .friend-actions .btn { padding: 0.55rem 0.9rem; font-size: 0.95rem; }
+}
+
+/* Consolidated Friend Card base styles */
 .friend-card {
     background: var(--surface-dark);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1.1rem 0.9rem;
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: visible;
+    display: grid;
+    grid-template-rows: auto auto auto auto; /* pill, avatar, name, actions */
+    align-items: start;
+    justify-items: center;
+    gap: 0.6rem;
+    min-height: 180px;
 }
 
 .friend-card:hover {
@@ -1513,18 +1784,8 @@ main.container {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border-color: var(--accent-primary);
 }
-/* ===== Refactored Friend Card Layout ===== */
-.friend-card { position:relative; overflow:visible; }
-.friend-card { 
-    display:grid;
-    grid-template-rows: auto auto auto auto; /* pill, avatar, name, actions */
-    align-items:start;
-    justify-items:center;
-    gap:0.6rem;
-    min-height:260px;
-    padding:1.1rem 0.9rem;
-}
-.friend-card .card-link { display:grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
+
+.friend-card .card-link { display: grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
 .card-link:hover .friend-name { color: var(--accent-primary); }
 .friend-avatar-link { display:flex; justify-content:center; width:100%; text-decoration:none; }
 .friend-avatar { width:80px; height:80px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:2.4rem; transition:transform 0.2s ease; }
@@ -1580,9 +1841,9 @@ main.container {
 .friend-dropdown-menu {
     display: none;
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: 100%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-8px);
     background: var(--bg-dark);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -1590,11 +1851,14 @@ main.container {
     z-index: 100;
     min-width: 150px;
     overflow: hidden;
+    opacity: 0;
+    transition: transform 160ms ease, opacity 160ms ease;
 }
 
 .friend-dropdown-menu.show {
     display: block;
-    animation: dropdownFadeIn 0.15s ease;
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
 }
 
 @keyframes dropdownFadeIn {
@@ -1692,6 +1956,16 @@ main.container {
     to { opacity: 1; }
 }
 
+.modal, .custom-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.12s ease;
+}
+
 .modal-content {
     background-color: var(--surface-dark);
     margin: 5% auto;
@@ -1717,22 +1991,24 @@ main.container {
     }
 }
 
-.modal-close {
-    color: var(--text-secondary);
-    position: absolute;
-    right: 1.5rem;
-    top: 1.5rem;
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    line-height: 1;
-}
+    /* consolidated modal close styling — used by both modal and confirm */
+    .modal-close {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 20px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: color 0.2s ease, background 0.12s ease;
+    }
 
-.modal-close:hover,
-.modal-close:focus {
-    color: var(--accent-primary);
-}
+    .modal-close:hover,
+    .modal-close:focus { color: var(--accent-primary); background: rgba(255,255,255,0.02); }
 
 #modalTitle {
     color: var(--text-light);
@@ -1772,6 +2048,35 @@ main.container {
     }
 }
 
+/* Improve modal scaling for very small screens */
+@media (max-width: 480px) {
+    .modal-content {
+        width: calc(100% - 32px);
+        max-width: none;
+        margin: 6% auto;
+        padding: 1rem;
+        border-radius: 8px;
+        box-sizing: border-box;
+        max-height: 86vh;
+    }
+
+    /* Poster images smaller and centered inside modal */
+    .modal-content img {
+        max-width: 140px !important;
+        width: auto;
+        height: auto;
+        display: block;
+        margin: 0 auto 0.8rem;
+    }
+
+    /* Tighter typography inside modal */
+    .modal-content h2 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .modal-content p { font-size: 0.95rem; margin-bottom: 0.6rem; }
+
+    /* Action buttons fit and stack if needed */
+    #modalActions .btn { width: 100%; padding: 0.6rem; font-size: 0.95rem; }
+}
+
 /* ---- Custom Confirm Dialog ---- */
 .custom-confirm {
     position: fixed;
@@ -1786,7 +2091,6 @@ main.container {
 
 .confirm-content {
     text-align: left;
-    /* extra top padding so the close button does not overlap the content */
     padding: 1.6rem 1.25rem 1rem;
     background: var(--surface-dark);
     border: 1px solid var(--border-color);
@@ -1831,13 +2135,77 @@ main.container {
 
 .modal-close:hover { color: var(--text-light); background: rgba(255,255,255,0.02); }
 
-.confirm-name { font-size:1.05rem; }
+/* ===== Responsive adjustments for small screens (phones/tablets) ===== */
+@media (max-width: 768px) {
+    /* Stack profile header vertically and center content */
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        padding: 1.25rem;
+        gap: 1rem;
+    }
 
-.confirm-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
+    .profile-info { text-align: center; }
+
+    /* Make friends grid single-column on small screens */
+    .friends-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        max-width: 100%;
+    }
+
+    .friend-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        min-height: auto;
+    }
+
+    .friend-card .card-link { display: grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
+    .friend-avatar { width:56px; height:56px; font-size:1.6rem; }
+    .friend-info { min-height: auto; text-align: center; }
+    .friend-name { font-size: 0.9rem; }
+
+    /* Hide status pill inside card-link on mobile; show actual action buttons instead */
+    .friend-card .card-link .friend-actions { display: none; }
+
+    /* Place actions to the right of the card */
+    .friend-actions { width: 100%; display:flex; align-items:center; flex-direction: column; gap: 0.4rem; }
+    .friend-actions .decision-row { min-height: auto; gap: 0.4rem; }
+    .friend-actions .decision-row .btn { padding: 0.4rem 0.7rem; font-size: 0.7rem; min-width: 70px; }
+
+    /* Make the friend-action-row centered and full-width on small screens */
+    .friend-action-row { justify-content: center; }
+
+    /* Make modal responsive: use full width with internal padding */
+    .confirm-content {
+        width: calc(100% - 32px);
+        max-width: 520px;
+        min-width: auto;
+        padding: 1.25rem;
+        margin: 0 16px;
+    }
+
+    /* Confirm header spacing */
+    .confirm-header { flex-direction: column; align-items: flex-start; }
+    .confirm-message { font-size: 0.98rem; }
+
+    /* Buttons: make them full width in stacked layout */
+    .confirm-actions { display:flex; gap:0.5rem; flex-direction: row; justify-content: center; }
+    .confirm-actions .btn { flex: 1 1 auto; }
 }
+
+@media (max-width: 420px) {
+    .friend-card { gap:0.5rem; padding: 0.6rem; }
+    .friend-avatar { width:48px; height:48px; font-size:1.4rem; }
+    .friend-name { font-size: 0.85rem; }
+    .friend-actions .decision-row .btn { padding: 0.35rem 0.6rem; font-size: 0.65rem; min-width: 65px; }
+    .profile-username { font-size:1.5rem; }
+}
+
+.confirm-name { font-size:1.05rem; }
 
 /* ---- COMPARE.PHP STYLES ---- */
 .compare-top-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; align-items: stretch; }
@@ -1883,3 +2251,26 @@ main.container {
 .friend-picker-avatar { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
 .friend-picker-name { flex: 1; }
 .friend-picker-empty { color: var(--text-secondary); padding: 0.75rem; }
+
+/* Make friends lists scrollable when they grow large so users can scroll on small viewports */
+.friends-section .friends-grid {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 0.5rem; /* visual spacing for scrollbar */
+}
+
+/* Tighter max-heights for smaller screens */
+@media (max-width: 1024px) {
+    .friends-section .friends-grid { max-height: calc(100vh - 240px); }
+}
+@media (max-width: 768px) {
+    .friends-section .friends-grid { max-height: calc(100vh - 200px); }
+}
+
+/* Make friend-picker-menu smoother on touch devices */
+.friend-picker-menu { -webkit-overflow-scrolling: touch; }
+
+/* Ensure long dropdowns and modals remain scrollable without blocking the page */
+.friend-dropdown-menu { max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.confirm-content { max-height: 75vh; overflow-y: auto; }
