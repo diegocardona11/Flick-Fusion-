@@ -553,7 +553,7 @@ main.container {
     flex: 1 1 auto;
     min-width: 0; /* allow the form to shrink on small viewports */
     align-items: center;
-    max-width: 900px;
+    max-width: 550px;
 }
 .search-input-large {
     flex-grow: 1;
