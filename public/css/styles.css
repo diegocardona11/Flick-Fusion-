@@ -79,7 +79,9 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    /* Good minimum horizontal padding on all viewports */
+    padding-block: 2rem;
+    padding-inline: clamp(12px, 4vw, 24px);
 }
 
 .centered-container {
@@ -97,6 +99,9 @@ main.container {
     width: 100%;
     max-width: 1200px;
     box-sizing: border-box;
+    /* ensure internal padding matches container's horizontal spacing */
+    padding-inline: clamp(12px, 4vw, 24px);
+    padding-block: 2rem;
 }
 
 
@@ -333,6 +338,11 @@ main.container {
         left: 50%;
         transform: translateX(-50%);
         z-index: 80;
+        /* keep the clickable area tight to the text */
+        display: inline-block;
+        width: auto;
+        padding: 0.15rem 0.4rem;
+        white-space: nowrap;
     }
 
     /* Position user profile to the left on small screens */
@@ -342,7 +352,7 @@ main.container {
         z-index: 90;
     }
 
-    /* Ensure nav-toggle sits right on small screens */
+    /* nav-toggle sits right on small screens */
     .nav-toggle {
         position: absolute;
         right: 1rem;
@@ -539,14 +549,21 @@ main.container {
 
 .search-form {
     display: flex;
-    min-width: 500px;
     gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0; /* allow the form to shrink on small viewports */
+    align-items: center;
+    max-width: 900px;
 }
 .search-input-large {
     flex-grow: 1;
     font-size: 1.1rem;
     padding: 0.75rem 1rem;
 }
+
+/* inputs/buttons within the search form use border-box sizing for reliable shrink behavior */
+.search-form input,
+.search-form button { box-sizing: border-box; }
 
 .results-title {
     border-bottom: 1px solid var(--border-color);
@@ -934,7 +951,7 @@ main.container {
 /* ---- Responsive Design ---- */
 @media (max-width: 1024px) {
     .container,
-    main.container { padding: 1.5rem 1rem; }
+    main.container { padding-block: 1.5rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Header stacks across lines */
     .main-header { height: auto; padding: 0.75rem 1rem; }
@@ -951,7 +968,7 @@ main.container {
 
 @media (max-width: 768px) {
     .container,
-    main.container { padding: 1rem 0.75rem; }
+    main.container { padding-block: 1rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Header stacks neatly */
     .header-content { flex-wrap: wrap; justify-content: center; }
@@ -986,7 +1003,7 @@ main.container {
 
 @media (max-width: 480px) {
     .container,
-    main.container { padding: 0.75rem 0.5rem; }
+    main.container { padding-block: 0.75rem; padding-inline: clamp(12px, 4vw, 24px); }
 
     /* Text sizing */
     .welcome-title { font-size: 2rem; }
@@ -997,6 +1014,28 @@ main.container {
 
     /* My list grid smallest columns */
     .mylist-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* Very small screens: reduce search input/button sizes so the form fits neatly inside the boxed header */
+@media (max-width: 420px) {
+    .search-form {
+        gap: 0.35rem;
+        flex-direction: column; /* keep stacked but tighter */
+        align-items: stretch;
+    }
+
+    .search-input-large {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .search-form .btn {
+        font-size: 0.95rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Reduce header padding slightly to give more room */
+    .search-page-header { padding: 0.9rem; }
 }
 
 /* ========================================
@@ -1645,13 +1684,22 @@ main.container {
     .friends-page .friend-actions .btn { padding: 0.55rem 0.9rem; font-size: 0.95rem; }
 }
 
+/* Consolidated Friend Card base styles */
 .friend-card {
     background: var(--surface-dark);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1.1rem 0.9rem;
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: visible;
+    display: grid;
+    grid-template-rows: auto auto auto auto; /* pill, avatar, name, actions */
+    align-items: start;
+    justify-items: center;
+    gap: 0.6rem;
+    min-height: 180px;
 }
 
 .friend-card:hover {
@@ -1659,18 +1707,8 @@ main.container {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     border-color: var(--accent-primary);
 }
-/* ===== Refactored Friend Card Layout ===== */
-.friend-card { position:relative; overflow:visible; }
-.friend-card { 
-    display:grid;
-    grid-template-rows: auto auto auto auto; /* pill, avatar, name, actions */
-    align-items:start;
-    justify-items:center;
-    gap:0.6rem;
-    min-height:180px; /* reduced so lists are denser and easier to scroll */
-    padding:1.1rem 0.9rem;
-}
-.friend-card .card-link { display:grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
+
+.friend-card .card-link { display: grid; grid-template-rows: subgrid; grid-row: 1 / span 3; width:100%; text-decoration:none; color:inherit; }
 .card-link:hover .friend-name { color: var(--accent-primary); }
 .friend-avatar-link { display:flex; justify-content:center; width:100%; text-decoration:none; }
 .friend-avatar { width:80px; height:80px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:2.4rem; transition:transform 0.2s ease; }
@@ -1841,6 +1879,16 @@ main.container {
     to { opacity: 1; }
 }
 
+.modal, .custom-confirm {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.12s ease;
+}
+
 .modal-content {
     background-color: var(--surface-dark);
     margin: 5% auto;
@@ -1866,22 +1914,24 @@ main.container {
     }
 }
 
-.modal-close {
-    color: var(--text-secondary);
-    position: absolute;
-    right: 1.5rem;
-    top: 1.5rem;
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    line-height: 1;
-}
+    /* consolidated modal close styling — used by both modal and confirm */
+    .modal-close {
+        position: absolute;
+        right: 12px;
+        top: 10px;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 20px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: color 0.2s ease, background 0.12s ease;
+    }
 
-.modal-close:hover,
-.modal-close:focus {
-    color: var(--accent-primary);
-}
+    .modal-close:hover,
+    .modal-close:focus { color: var(--accent-primary); background: rgba(255,255,255,0.02); }
 
 #modalTitle {
     color: var(--text-light);
@@ -1921,6 +1971,35 @@ main.container {
     }
 }
 
+/* Improve modal scaling for very small screens */
+@media (max-width: 480px) {
+    .modal-content {
+        width: calc(100% - 32px);
+        max-width: none;
+        margin: 6% auto;
+        padding: 1rem;
+        border-radius: 8px;
+        box-sizing: border-box;
+        max-height: 86vh;
+    }
+
+    /* Poster images smaller and centered inside modal */
+    .modal-content img {
+        max-width: 140px !important;
+        width: auto;
+        height: auto;
+        display: block;
+        margin: 0 auto 0.8rem;
+    }
+
+    /* Tighter typography inside modal */
+    .modal-content h2 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .modal-content p { font-size: 0.95rem; margin-bottom: 0.6rem; }
+
+    /* Action buttons fit and stack if needed */
+    #modalActions .btn { width: 100%; padding: 0.6rem; font-size: 0.95rem; }
+}
+
 /* ---- Custom Confirm Dialog ---- */
 .custom-confirm {
     position: fixed;
@@ -1935,7 +2014,6 @@ main.container {
 
 .confirm-content {
     text-align: left;
-    /* extra top padding so the close button does not overlap the content */
     padding: 1.6rem 1.25rem 1rem;
     background: var(--surface-dark);
     border: 1px solid var(--border-color);
@@ -2026,12 +2104,12 @@ main.container {
         margin: 0 16px;
     }
 
-    /* Adjust confirm header spacing */
+    /* Confirm header spacing */
     .confirm-header { flex-direction: column; align-items: flex-start; }
     .confirm-message { font-size: 0.98rem; }
 
     /* Buttons: make them full width in stacked layout */
-    .confirm-actions { display:flex; gap:0.5rem; flex-direction: row; }
+    .confirm-actions { display:flex; gap:0.5rem; flex-direction: row; justify-content: center; }
     .confirm-actions .btn { flex: 1 1 auto; }
 }
 
@@ -2042,12 +2120,6 @@ main.container {
 }
 
 .confirm-name { font-size:1.05rem; }
-
-.confirm-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
 
 /* ---- COMPARE.PHP STYLES ---- */
 .compare-top-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; align-items: stretch; }
